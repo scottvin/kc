@@ -7,11 +7,15 @@ import java.time.Instant
 
 const val seed = 1L shl 51
 const val SIZE = 7
-val list = (0 until 52).toList()
-val list1 = generateSequence(seed) { it shr 1 }.takeWhile { it > 0 }.toList()
-val list2 = generateSequence(seed shr 1) { it shr 1 }.takeWhile { it > 0 }.toList()
 suspend fun main() {
     cards.forEach { it.init() }
+    val start = Instant.now().toEpochMilli()
+    val cnt = generate7()/*.onEach { println(it.code()) }*/.count()
+//    val cnt3 = list2.onEach { println(it) }.count()
+//    val cnt3 = cards.onEach { println(it) }.count()
+    val end = Instant.now().toEpochMilli() - start
+    println(cnt)
+    println(end)
     val start3 = Instant.now().toEpochMilli()
     val cnt3 = generate7()/*.onEach { println(it.code()) }*/.count()
 //    val cnt3 = list2.onEach { println(it) }.count()
