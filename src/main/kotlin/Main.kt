@@ -1,41 +1,39 @@
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import java.time.Instant
-import java.util.stream.IntStream
-import java.util.stream.LongStream
-import kotlin.streams.asStream
-import kotlin.streams.toList
 
 
 const val seed = 1L shl 51
 const val SIZE = 7
-val list = (0 until 52).toList();
-val sequence = list.asSequence();
+val list = (0 until 52).toList()
+val sequence = list.asSequence()
 suspend fun main() {
     val start3 = Instant.now().toEpochMilli()
-    val cnt3 = generateStream(0L, seed, SIZE, 0).count()
+    val cnt3 = generateAsync(0L, seed, SIZE, 0).count()
     val end3 = Instant.now().toEpochMilli() - start3
     println(cnt3)
     println(end3)
 }
 
 
-fun generateStream(accumulator: Long, value: Long, size: Int, index: Int): LongStream {
+suspend fun generateAsync(accumulator: Long, value: Long, size: Int, index: Int): Sequence<Long> {
+    return sequence.map { value shr it }
+        .takeWhile { it > 0 }
+        .flatMapAsync { generate(accumulator or it, it shr 1, size, index + 1) }
+
+}
+
+fun generate(accumulator: Long, value: Long, size: Int, index: Int): Sequence<Long> {
     if (index < size) {
-        return LongStream.iterate(value, { it > 0 }, { it shr 1 })
-            .flatMap {
-                when (index) {
-                    0 -> generateStreamAsync(accumulator or it, it shr 1, size, index + 1)
-                    else -> generateStream(accumulator or it, it shr 1, size, index + 1)
-                }
-            }
+        return sequence.map { value shr it }
+            .takeWhile { it > 0 }
+            .flatMap { generate(accumulator or it, it shr 1, size, index + 1) }
     }
-    return LongStream.of(accumulator)
+    return sequenceOf(accumulator)
 }
 
-fun generateStreamAsync(accumulator: Long, value: Long, size: Int, index: Int): LongStream {
-    return LongStream.iterate(value, { it > 0 }, { it shr 1 })
-        .flatMap { generateStream(accumulator or it, it shr 1, size, index + 1) }
-}
+fun Sequence<Long>.flatMapAsync(mapper: (Long) -> Sequence<Long>): Sequence<Long> =
+    flatMap { mapper(it) }
 
-suspend fun List<Long>.flatMapAsyncList(mapper: suspend (Long) -> List<Long>): List<Long> =
-    coroutineScope { map { async { mapper(it) } }.awaitAll().flatten() }
+
