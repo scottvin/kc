@@ -1,37 +1,29 @@
 package domain
 
 data class Hand(
-    val key: Long = 0L,
+    val handKey: ULong = 0UL,
     val card: Card = Card.empty,
-    var subKey: Long = 0L,
-    var filterKey: Long = (0L).inv(),
-    var pocketKey: Long = 0L,
-    var flopKey: Long = 0L,
-    var turnKey: Long = 0L,
-    var riverKey: Long = 0L
+    val pocketKey: ULong = 0UL,
+    val flopKey: ULong = 0UL,
+    val turnKey: ULong = 0UL,
+    val riverKey: ULong = 0UL,
+    val baseKey: ULong = (0UL).inv(),
+    val parentKey: ULong = (0UL)
 ) {
-    fun children(): Sequence<Hand> = card.remaining.asSequence()
-        .filter { (it.key and this.filterKey) == it.key }
-        .filter { (it.key and this.key) == 0L }
-        .map { this.copy(key = this.key or it.key, card = it) }
-
-    fun sub(): Long {
-        val subKey = key and subKey.inv()
-        this.subKey = this.subKey or subKey
-        return subKey
+    companion object {
+        val empty = Hand()
     }
-
-    fun print(): String { return """
-***************************
-Hand   ${Card.code(this.key)} 
-Draw   ${Card.code(this.pocketKey)}:${Card.code(this.flopKey)}:${Card.code(this.turnKey)}:${Card.code(this.riverKey)} 
-Filter ${Card.code(this.filterKey)}
-Pocket ${Card.code(this.pocketKey)}
-Flop   ${Card.code(this.flopKey)}
-Turn   ${Card.code(this.turnKey)}
-River  ${Card.code(this.riverKey)}
-*************************** 
-"""
+    fun print(): String {
+        return """ 
+            ************************************
+            Key     ${this.handKey}UL
+            Hand    ${Card.code(this.handKey)}
+            Draw    ${Card.code(this.pocketKey)} ${Card.code(this.flopKey)} ${Card.code(this.turnKey)} ${Card.code(this.riverKey)}
+            pocket  ${Card.code(this.pocketKey)}
+            flop    ${Card.code(this.flopKey)}
+            Turn    ${Card.code(this.turnKey)}
+            River   ${Card.code(this.riverKey)}
+        """.trimIndent()
     }
 
 }
