@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.DecimalFormat
 import kotlin.time.Duration
+import kotlin.time.TimeSource
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
@@ -17,6 +18,7 @@ suspend fun main() = runBlocking {
     var count = 0L
     var duration: Duration = Duration.ZERO
     val format = DecimalFormat("#,##0")
+    val time = TimeSource.Monotonic.markNow()
     val work = scope.launch {
         work().onEach { data ->
             launch {
@@ -24,7 +26,7 @@ suspend fun main() = runBlocking {
                 duration += timedValue.duration
                 count += timedValue.value
                 val rate = ((count.toDouble() / duration.inWholeMicroseconds) * 1_000_000)
-                println("Rate: ${format.format(rate)} Duration: $duration Count: ${format.format(count)}")
+                println("Rate: ${format.format(rate)} Elapsed: ${time.elapsedNow()} Duration: $duration Count: ${format.format(count)}")
             }
         }.count()
     }
