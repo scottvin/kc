@@ -1,57 +1,63 @@
 import domain.Hand
+import domain.HandData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.time.measureTimedValue
 
 suspend fun main() = runBlocking {
-    work()
-}
-
-private suspend fun work2() {
-    println(
-        measureTimedValue {
-            Hand().baseHands.count()
-        }
-    )
-}
-
-private suspend fun work() {
     val scope = CoroutineScope(Dispatchers.Default)
     println(
         measureTimedValue {
             val work = scope.launch {
-                Hand().baseHands
-                    .forEach {
-                        launch {
-                            generatorHands(it).count()
-                        }
+                println(
+                    measureTimedValue {
+                        work().onEach { data ->
+                            launch { data.execute }
+                        }.count()
                     }
+                )
             }
             work.join()
         }
     )
 }
 
-fun generatorHands(baseHand: Hand): Sequence<Hand> =
-    sequenceOf(baseHand)
-        .flatMap { it.pockets }
-        .flatMap { it.flops }
-        .flatMap { it.turns }
-        .flatMap { it.rivers }
+private suspend fun work() = flow {
+    baseHands.map { hands ->
+        hands.flatMap { it.pockets }
+            .flatMap { it.flops }
+            .flatMap { it.turns }
+            .flatMap { it.rivers }
+    }.forEachIndexed { index, hands ->
+        emit(HandData(index, hands))
+    }
+}
 
-
-private val Hand.baseHands: Sequence<Hand>
+val HandData.execute: Unit
+    get() {
+        println(
+            measureTimedValue {
+                hands.count()
+            }
+        )
+    }
+private val baseHands: Sequence<Sequence<Hand>>
     get() = sequenceOf(Hand())
         .flatMap { it.children() }
         .flatMap { it.children() }
         .flatMap { it.children() }
-        .flatMap { it.children() }//.take(1)
         .flatMap { it.children() }
         .flatMap { it.children() }
-        .flatMap { it.children() }
-        .map { it.copy(baseKey = it.handKey, handKey = 0UL) }
+        .map { it.children() }
+        .map { it.flatMap { hand -> hand.children() } }
+        .filter { it.count() > 0 }
+        .map { it.map { hand -> hand.copy(baseKey = hand.handKey, handKey = 0UL) } }
+
 
 private val Hand.pockets: Sequence<Hand>
     get() = sequenceOf(Hand(parentKey = handKey, baseKey = baseKey))

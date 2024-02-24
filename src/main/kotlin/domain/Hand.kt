@@ -17,6 +17,8 @@ data class Hand(
         return """ 
             ************************************
             Key     ${this.handKey}UL
+            Base    ${Card.code(this.baseKey)}
+            Parent  ${Card.code(this.parentKey)}
             Hand    ${Card.code(this.handKey)}
             Draw    ${Card.code(this.pocketKey)} ${Card.code(this.flopKey)} ${Card.code(this.turnKey)} ${Card.code(this.riverKey)}
             pocket  ${Card.code(this.pocketKey)}
