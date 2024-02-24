@@ -26,7 +26,16 @@ suspend fun main() = runBlocking {
                 duration += timedValue.duration
                 count += timedValue.value
                 val rate = ((count.toDouble() / duration.inWholeMicroseconds) * 1_000_000)
-                println("Rate: ${format.format(rate)} Elapsed: ${time.elapsedNow()} Duration: $duration Count: ${format.format(count)}")
+                println("""
+                    
+                    Rate: ${format.format(rate)}
+                    Elapsed: ${time.elapsedNow()}
+                    Duration: ${timedValue.duration}
+                    Total Duration: $duration
+                    Count: ${format.format(timedValue.value)}
+                    Total Count: ${format.format(count)}
+                    
+                    """.trimIndent())
             }
         }.count()
     }
