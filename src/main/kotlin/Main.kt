@@ -1,25 +1,30 @@
 import domain.Hand
 import domain.HandData
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.text.DecimalFormat
 import kotlin.time.Duration
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
 suspend fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.Default)
-    var count = 0.0
+    var count = 0L
     var duration: Duration = Duration.ZERO
+    val format = DecimalFormat("#,##0")
     val work = scope.launch {
         work().onEach { data ->
             launch {
                 val timedValue = data.execute
                 duration += timedValue.duration
                 count += timedValue.value
-                val rate = (count / duration.inWholeMicroseconds) * 1_000_000
-                println("Rate: $rate Duration: $duration Count: $count")
+                val rate = ((count.toDouble() / duration.inWholeMicroseconds) * 1_000_000)
+                println("Rate: ${format.format(rate)} Duration: $duration Count: ${format.format(count)}")
             }
         }.count()
     }
@@ -38,7 +43,7 @@ private suspend fun work() = flow {
 }
 
 val HandData.execute: TimedValue<Long>
-    get()  = measureTimedValue { hands.count().toLong() }
+    get() = measureTimedValue { hands.count().toLong() }
 private val baseHands: Sequence<Sequence<Hand>>
     get() = sequenceOf(Hand())
         .flatMap { it.children() }
