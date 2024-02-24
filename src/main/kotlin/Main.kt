@@ -1,26 +1,29 @@
 import domain.Hand
 import domain.HandData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlin.time.Duration
+import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
 suspend fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.Default)
-    println(
-        measureTimedValue {
-            val work = scope.launch {
-                work().onEach { data ->
-                    launch { data.execute }
-                }.count()
+    var count = 0.0
+    var duration: Duration = Duration.ZERO
+    val work = scope.launch {
+        work().onEach { data ->
+            launch {
+                val timedValue = data.execute
+                duration += timedValue.duration
+                count += timedValue.value
+                val rate = (count / duration.inWholeMicroseconds) * 1_000_000
+                println("Rate: $rate Duration: $duration Count: $count")
             }
-            work.join()
-        }
-    )
+        }.count()
+    }
+    work.join()
 }
 
 private suspend fun work() = flow {
@@ -34,18 +37,16 @@ private suspend fun work() = flow {
     }
 }
 
-val HandData.execute: Unit
-    get() {
-        println("$index ${ measureTimedValue { hands.count() } }")
-    }
+val HandData.execute: TimedValue<Long>
+    get()  = measureTimedValue { hands.count().toLong() }
 private val baseHands: Sequence<Sequence<Hand>>
     get() = sequenceOf(Hand())
         .flatMap { it.children() }
         .flatMap { it.children() }
         .flatMap { it.children() }
-        .flatMap { it.children() }
-        .flatMap { it.children() }
         .map { it.children() }
+        .map { it.flatMap { hand -> hand.children() } }
+        .map { it.flatMap { hand -> hand.children() } }
         .map { it.flatMap { hand -> hand.children() } }
         .filter { it.count() > 0 }
         .map { it.map { hand -> hand.copy(baseKey = hand.handKey, handKey = 0UL) } }
