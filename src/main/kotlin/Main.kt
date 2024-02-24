@@ -43,8 +43,8 @@ suspend fun main() = runBlocking {
 }
 
 private suspend fun work() = flow {
-    baseHands.map { hands ->
-        hands.flatMap { it.pockets }
+    baseHands.map { hand ->
+        sequenceOf(hand).flatMap { it.pockets }
             .flatMap { it.flops }
             .flatMap { it.turns }
             .flatMap { it.rivers }
@@ -55,17 +55,16 @@ private suspend fun work() = flow {
 
 val HandData.execute: TimedValue<Long>
     get() = measureTimedValue { hands.count().toLong() }
-private val baseHands: Sequence<Sequence<Hand>>
+private val baseHands: Sequence<Hand>
     get() = sequenceOf(Hand())
         .flatMap { it.children() }
         .flatMap { it.children() }
         .flatMap { it.children() }
-        .map { it.children() }
-        .map { it.flatMap { hand -> hand.children() } }
-        .map { it.flatMap { hand -> hand.children() } }
-        .map { it.flatMap { hand -> hand.children() } }
-        .filter { it.count() > 0 }
-        .map { it.map { hand -> hand.copy(baseKey = hand.handKey, handKey = 0UL) } }
+        .flatMap { it.children() }
+        .flatMap { it.children() }
+        .flatMap { it.children() }
+        .flatMap { it.children() }
+        .map { it.copy(baseKey = it.handKey, handKey = 0UL) }
 
 
 private val Hand.pockets: Sequence<Hand>
