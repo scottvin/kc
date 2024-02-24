@@ -1,61 +1,64 @@
 import domain.Hand
 import domain.HandData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.reduce
 import java.text.DecimalFormat
-import kotlin.time.Duration
 import kotlin.time.TimeSource
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
+//var _52_7 = 133784560
 suspend fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.Default)
-    var count = 0L
-    var duration: Duration = Duration.ZERO
     val format = DecimalFormat("#,##0")
     val time = TimeSource.Monotonic.markNow()
     val work = scope.launch {
-        work().onEach { data ->
-            launch {
-                val timedValue = data.execute
-                duration += timedValue.duration
-                count += timedValue.value
-                val rate = ((count.toDouble() / duration.inWholeMicroseconds) * 1_000_000)
-                println("""
-                    
+        println(
+            work()
+                .map { data ->
+                    async {
+                        val timedValue = data.execute
+                        val rate = ((timedValue.value.toDouble() / timedValue.duration.inWholeNanoseconds) * 1_000_000_000)
+                        println(
+                            """
+
                     Rate: ${format.format(rate)}
                     Elapsed: ${time.elapsedNow()}
                     Duration: ${timedValue.duration}
-                    Total Duration: $duration
                     Count: ${format.format(timedValue.value)}
-                    Total Count: ${format.format(count)}
                     
-                    """.trimIndent())
-            }
-        }.count()
+                    """.trimIndent()
+                        )
+                        timedValue.value
+                    }
+                }
+                .map {
+                    it.await()
+                }
+                .reduce { accumulator, value -> accumulator + value }
+        )
     }
     work.join()
 }
 
 private suspend fun work() = flow {
-    baseHands.map { hand ->
-        sequenceOf(hand).flatMap { it.pockets }
-            .flatMap { it.flops }
-            .flatMap { it.turns }
-            .flatMap { it.rivers }
-    }.forEachIndexed { index, hands ->
-        emit(HandData(index, hands))
-    }
+    baseHands
+        .map { hands ->
+            hands.flatMap { it.pockets }
+                .flatMap { it.flops }
+                .flatMap { it.turns }
+                .flatMap { it.rivers }
+        }
+        .forEachIndexed { index, hands ->
+            emit(HandData(index, hands))
+        }
 }
 
 val HandData.execute: TimedValue<Long>
     get() = measureTimedValue { hands.count().toLong() }
-private val baseHands: Sequence<Hand>
+private val baseHands: Sequence<Sequence<Hand>>
     get() = sequenceOf(Hand())
         .flatMap { it.children() }
         .flatMap { it.children() }
@@ -65,7 +68,8 @@ private val baseHands: Sequence<Hand>
         .flatMap { it.children() }
         .flatMap { it.children() }
         .map { it.copy(baseKey = it.handKey, handKey = 0UL) }
-
+        .chunked(22_100)
+        .map { it.asSequence() }
 
 private val Hand.pockets: Sequence<Hand>
     get() = sequenceOf(Hand(parentKey = handKey, baseKey = baseKey))
