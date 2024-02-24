@@ -1,9 +1,13 @@
 import domain.Hand
 import domain.HandData
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.reduce
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.text.DecimalFormat
 import kotlin.time.TimeSource
 import kotlin.time.TimedValue
@@ -17,10 +21,11 @@ suspend fun main() = runBlocking {
     val work = scope.launch {
         println(
             work()
-                .map { data ->
-                    async {
+                .onEach { data ->
+                    launch {
                         val timedValue = data.execute
-                        val rate = ((timedValue.value.toDouble() / timedValue.duration.inWholeNanoseconds) * 1_000_000_000)
+                        val rate =
+                            ((timedValue.value.toDouble() / timedValue.duration.inWholeNanoseconds) * 1_000_000_000)
                         println(
                             """
 
@@ -34,10 +39,7 @@ suspend fun main() = runBlocking {
                         timedValue.value
                     }
                 }
-                .map {
-                    it.await()
-                }
-                .reduce { accumulator, value -> accumulator + value }
+                .count()
         )
     }
     work.join()
