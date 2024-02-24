@@ -14,13 +14,9 @@ suspend fun main() = runBlocking {
     println(
         measureTimedValue {
             val work = scope.launch {
-                println(
-                    measureTimedValue {
-                        work().onEach { data ->
-                            launch { data.execute }
-                        }.count()
-                    }
-                )
+                work().onEach { data ->
+                    launch { data.execute }
+                }.count()
             }
             work.join()
         }
@@ -40,11 +36,7 @@ private suspend fun work() = flow {
 
 val HandData.execute: Unit
     get() {
-        println(
-            measureTimedValue {
-                hands.count()
-            }
-        )
+        println("$index ${ measureTimedValue { hands.count() } }")
     }
 private val baseHands: Sequence<Sequence<Hand>>
     get() = sequenceOf(Hand())
