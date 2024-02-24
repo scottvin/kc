@@ -4,7 +4,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -24,17 +23,18 @@ suspend fun main() = runBlocking {
                 .onEach { data ->
                     launch {
                         val timedValue = data.execute
-                        val rate =
-                            ((timedValue.value.toDouble() / timedValue.duration.inWholeNanoseconds) * 1_000_000_000)
+                        val count = timedValue.value.toDouble()
+                        val duration = timedValue.duration.inWholeNanoseconds
+                        val rate = ((count / duration) * 1_000_000_000)
                         println(
                             """
 
-                    Rate: ${format.format(rate)}
-                    Elapsed: ${time.elapsedNow()}
-                    Duration: ${timedValue.duration}
-                    Count: ${format.format(timedValue.value)}
+                            Rate: ${format.format(rate)}
+                            Elapsed: ${time.elapsedNow()}
+                            Duration: ${timedValue.duration}
+                            Count: ${format.format(timedValue.value)}
                     
-                    """.trimIndent()
+                            """.trimIndent()
                         )
                         timedValue.value
                     }
