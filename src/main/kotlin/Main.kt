@@ -70,7 +70,8 @@ private val baseHands: Sequence<Sequence<Hand>>
         .flatMap { it.children() }
         .flatMap { it.children() }
         .map { it.copy(baseKey = it.handKey, handKey = 0UL) }
-        .chunked(22_100)
+        .chunked(7_264_320 / 420 )
+//        .chunked(454_020 / 420 )
         .map { it.asSequence() }
 
 private val Hand.pockets: Sequence<Hand>
