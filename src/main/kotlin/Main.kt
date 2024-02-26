@@ -1,19 +1,26 @@
 import domain.Hand
 import domain.HandData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.text.DecimalFormat
 import kotlin.time.TimeSource
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
 //var _52_7 = 133784560
+//val baseKey = 0B1111111111111111111111111111111111111111111111111111L
+//val baseKey = 0B111_1111L
+
+@OptIn(ExperimentalUnsignedTypes::class)
 suspend fun main() = runBlocking {
+    val time = TimeSource.Monotonic.markNow()
+    execute()
+    println(time.elapsedNow())
+}
+
+private suspend fun execute() {
     val scope = CoroutineScope(Dispatchers.Default)
     val format = DecimalFormat("#,##0")
     val time = TimeSource.Monotonic.markNow()
@@ -36,7 +43,6 @@ suspend fun main() = runBlocking {
                     
                             """.trimIndent()
                         )
-                        timedValue.value
                     }
                 }
                 .count()
@@ -46,21 +52,24 @@ suspend fun main() = runBlocking {
 }
 
 private suspend fun work() = flow {
-    baseHands
-        .map { hands ->
-            hands.flatMap { it.pockets }
-                .flatMap { it.flops }
-                .flatMap { it.turns }
-                .flatMap { it.rivers }
-        }
+    hands()
+        .chunked(7_264_320 / 420)
         .forEachIndexed { index, hands ->
             emit(HandData(index, hands))
         }
 }
 
+private fun hands() = sequenceOf(Hand())
+    .flatMap { it.baseHands }
+    .flatMap { it.pockets }
+    .flatMap { it.flops }
+    .flatMap { it.turns }
+    .flatMap { it.rivers }
+
+
 val HandData.execute: TimedValue<Long>
     get() = measureTimedValue { hands.count().toLong() }
-private val baseHands: Sequence<Sequence<Hand>>
+private val Hand.baseHands: Sequence<Hand>
     get() = sequenceOf(Hand())
         .flatMap { it.children() }
         .flatMap { it.children() }
@@ -69,10 +78,7 @@ private val baseHands: Sequence<Sequence<Hand>>
         .flatMap { it.children() }
         .flatMap { it.children() }
         .flatMap { it.children() }
-        .map { it.copy(baseKey = it.handKey, handKey = 0UL) }
-        .chunked(7_264_320 / 420 )
-//        .chunked(454_020 / 420 )
-        .map { it.asSequence() }
+        .map { it.copy(baseKey = it.handKey, handKey = 0L) }
 
 private val Hand.pockets: Sequence<Hand>
     get() = sequenceOf(Hand(parentKey = handKey, baseKey = baseKey))
@@ -100,6 +106,6 @@ private val Hand.rivers: Sequence<Hand>
 fun Hand.children(): Sequence<Hand> = card.remaining
     .asSequence()
     .filter { (baseKey and it.key) == it.key }
-    .filter { (parentKey and it.key) == 0UL }
+    .filter { (parentKey and it.key) == 0L }
     .map { copy(handKey = it.key or handKey, card = it) }
 

@@ -1,7 +1,7 @@
 package domain
 
 data class Card(
-    val key: ULong = 1UL shl 52,
+    val key: Long = 1L shl 52,
     val rank: Rank = Rank(),
     val suit: Suit = Suit(),
     val code: String = "",
@@ -14,8 +14,8 @@ data class Card(
         init {
             collection.zipWithNext().forEach { (card1, card2) -> card1.next(card2) }
         }
-        fun code(key: ULong): String = cards(key).joinToString(" ") { c -> c.code }
-        fun cards(key: ULong): List<Card> = collection.filter { (it.key and key) == it.key }
+        fun code(key: Long): String = cards(key).joinToString(" ") { c -> c.code }
+        fun cards(key: Long): List<Card> = collection.filter { (it.key and key) == it.key }
         fun create(rank: Rank, suit: Suit): Card {
             return Card(rank.key and suit.key, rank, suit, rank.code + suit.code)
         }
@@ -46,9 +46,9 @@ data class Card(
 }
 
 class CardEdge(
-    val kindKey: ULong,
-    val flushKey: ULong,
-    val straightKey: ULong,
-    val straightFlushKey: ULong
+    val kindKey: Long,
+    val flushKey: Long,
+    val straightKey: Long,
+    val straightFlushKey: Long
 )
 

@@ -1,14 +1,14 @@
 package domain
 
 data class Hand(
-    val handKey: ULong = 0UL,
+    val handKey: Long = 0L,
     val card: Card = Card.empty,
-    val pocketKey: ULong = 0UL,
-    val flopKey: ULong = 0UL,
-    val turnKey: ULong = 0UL,
-    val riverKey: ULong = 0UL,
-    val baseKey: ULong = (0UL).inv(),
-    val parentKey: ULong = (0UL)
+    val pocketKey: Long = 0L,
+    val flopKey: Long = 0L,
+    val turnKey: Long = 0L,
+    val riverKey: Long = 0L,
+    val baseKey: Long = (0L).inv(),
+    val parentKey: Long = (0L)
 ) {
     companion object {
         val empty = Hand()
@@ -16,7 +16,7 @@ data class Hand(
     fun print(): String {
         return """ 
             ************************************
-            Key     ${this.handKey}UL
+            Key     ${this.handKey}L
             Base    ${Card.code(this.baseKey)}
             Parent  ${Card.code(this.parentKey)}
             Hand    ${Card.code(this.handKey)}

@@ -1,8 +1,8 @@
 package domain
 
-data class Rank(val index: Int = -1, val code: String = "", val key: ULong = topRankKey shr (index * 4)) {
+data class Rank(val index: Int = -1, val code: String = "", val key: Long = topRankKey shr (index * 4)) {
     companion object {
-        private var topRankKey: ULong = 0b1111UL shl (12 * 4)
+        private var topRankKey: Long = 0b1111L shl (12 * 4)
         val collection: List<Rank> = listOf(
             Rank(0, "A"),
             Rank(1, "K"),
