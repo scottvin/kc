@@ -15,10 +15,7 @@ import kotlin.time.TimeSource
 
 @OptIn(ExperimentalUnsignedTypes::class)
 suspend fun main() = runBlocking {
-    val time = TimeSource.Monotonic.markNow()
-    execute()
-//    println(Hand.baseHands.count())
-    println(time.elapsedNow())
+    execute2()
 }
 
 private suspend fun execute() {
@@ -27,45 +24,86 @@ private suspend fun execute() {
     val time = TimeSource.Monotonic.markNow()
     val work = scope.launch {
         println(
-            work()
-                .onEach { data ->
-                    launch {
-                        val index = data.index
-                        val count = data.hands.count()
-                        val totalCount = count * (index + 1)
-                        val elapsed = time.elapsedNow()
-                        val duration = elapsed.div(totalCount)
-                        val first = data.hands.first()
-                        var handKey = first.handKey
-                        var base = Card.code(first.baseKey)
-                        var parent = Card.code(first.parentKey)
-                        var hand = Card.code(first.handKey)
-                        var pocket = Card.code(first.pocketKey)
-                        var flop = Card.code(first.flopKey)
-                        var turn = Card.code(first.turnKey)
-                        var river = Card.code(first.riverKey)
-                        println(
-                            """
-
-                            Index:        $index
-                            Elapsed:      $elapsed
-                            Duration:     $duration
-                            Count:        ${format.format(count)}
-                            Total Count:  ${format.format(totalCount)}
-                            Key           ${handKey}L
-                            Base          $base
-                            Parent        $parent
-                            Hand          $hand
-                            Draw          [$pocket] [$flop] [$turn] [$river]
-                  
-                            """.trimIndent()
-                        )
-                    }
+            work().onEach { data ->
+                launch {
+                    printSample(data, time, format)
+//                    printAll(data, time, format)
                 }
-                .count()
+            }.count()
         )
     }
     work.join()
+}
+private fun execute2() {
+    val format = DecimalFormat("#,##0")
+    val time = TimeSource.Monotonic.markNow()
+    val count = format.format(hands().count())
+    val elapsed = time.elapsedNow()
+    println("Count: $count  Elapsed: $elapsed")
+}
+
+private fun printSample(
+    data: HandData,
+    time: TimeSource.Monotonic.ValueTimeMark,
+    format: DecimalFormat
+) {
+    val index = data.index
+    val count = data.hands.count()
+    val totalCount = count * (index + 1)
+    val elapsed = time.elapsedNow()
+    val duration = elapsed.div(totalCount)
+    val first = data.hands.first()
+    var handKey = first.handKey
+    var base = Card.code(first.baseKey)
+    var parent = Card.code(first.parentKey)
+    var hand = Card.code(first.handKey)
+    var pocket = Card.code(first.pocketKey)
+    var flop = Card.code(first.flopKey)
+    var turn = Card.code(first.turnKey)
+    var river = Card.code(first.riverKey)
+    println(
+        """
+
+        Index:        $index
+        Elapsed:      $elapsed
+        Duration:     $duration
+        Count:        ${format.format(count)}
+        Total Count:  ${format.format(totalCount)}
+        Key           ${handKey}L
+        Base          $base
+        Parent        $parent
+        Hand          $hand
+        Draw          [$pocket] [$flop] [$turn] [$river]
+                  
+        """.trimIndent()
+    )
+}
+
+private fun printAll(
+    data: HandData,
+    time: TimeSource.Monotonic.ValueTimeMark,
+    format: DecimalFormat
+) {
+    data.hands.forEach {
+        var handKey = it.handKey
+        var base = Card.code(it.baseKey)
+        var parent = Card.code(it.parentKey)
+        var hand = Card.code(it.handKey)
+        var pocket = Card.code(it.pocketKey)
+        var flop = Card.code(it.flopKey)
+        var turn = Card.code(it.turnKey)
+        var river = Card.code(it.riverKey)
+        println(
+        """
+        Key           ${handKey}L
+        Base          $base
+        Parent        $parent
+        Hand          $hand
+        Draw          [$pocket] [$flop] [$turn] [$river]
+                  
+        """.trimIndent()
+        )
+    }
 }
 
 private suspend fun work() = flow {
@@ -76,7 +114,7 @@ private suspend fun work() = flow {
         .forEachIndexed { index, hands -> emit(HandData(index, hands)) }
 }
 
-private fun hands() = Hand.baseHands
+private fun hands() = Hand.baseHands//.take(1)
     .flatMap { it.pockets }
     .flatMap { it.flops }
     .flatMap { it.turns }
