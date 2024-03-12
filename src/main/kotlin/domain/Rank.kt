@@ -1,6 +1,6 @@
 package domain
 
-data class Rank(val index: Int = -1, val code: String = "", val key: Long = topRankKey shr (index * 4)) {
+data class Rank(val index: Int, val code: String) {
     companion object {
         private var topRankKey: Long = 0b1111L shl (12 * 4)
         val collection: List<Rank> = listOf(
@@ -32,37 +32,24 @@ data class Rank(val index: Int = -1, val code: String = "", val key: Long = topR
         val _3: Rank = collection[11]
         val _2: Rank = collection[12]
 
-        val _A_K_Q_J_T: Series = Series(listOf(_A, _K, _Q, _J, _T))
-        val _K_Q_J_T_9: Series = Series(listOf(_K, _Q, _J, _T, _9))
-        val _Q_J_T_9_8: Series = Series(listOf(_Q, _J, _T, _9, _8))
-        val _J_T_9_8_7: Series = Series(listOf(_J, _T, _9, _8, _7))
-        val _T_9_8_7_6: Series = Series(listOf(_T, _9, _8, _7, _6))
-        val _9_8_7_6_5: Series = Series(listOf(_9, _8, _7, _6, _5))
-        val _8_7_6_5_4: Series = Series(listOf(_8, _7, _6, _5, _4))
-        val _7_6_5_4_3: Series = Series(listOf(_7, _6, _5, _4, _3))
-        val _6_5_4_3_2: Series = Series(listOf(_6, _5, _4, _3, _2))
-        val _5_4_3_2_A: Series = Series(listOf(_5, _4, _3, _2, _A))
-        val _4_3_2_A: Series = Series(listOf(_4, _3, _2, _A))
-        val _3_2_A: Series = Series(listOf(_3, _2, _A))
-        val _2_A: Series = Series(listOf(_2, _A))
-        init {
-            _A.series = _A_K_Q_J_T
-            _K.series = _K_Q_J_T_9
-            _Q.series = _Q_J_T_9_8
-            _J.series = _J_T_9_8_7
-            _T.series = _T_9_8_7_6
-            _9.series = _9_8_7_6_5
-            _8.series = _8_7_6_5_4
-            _7.series = _7_6_5_4_3
-            _6.series = _6_5_4_3_2
-            _5.series = _5_4_3_2_A
-            _4.series = _4_3_2_A
-            _3.series = _3_2_A
-            _2.series = _2_A
-        }
+        val seriesData = listOf(
+            listOf(_A, _K, _Q, _J, _T),
+            listOf(_K, _Q, _J, _T, _9),
+            listOf(_Q, _J, _T, _9, _8),
+            listOf(_J, _T, _9, _8, _7),
+            listOf(_T, _9, _8, _7, _6),
+            listOf(_9, _8, _7, _6, _5),
+            listOf(_8, _7, _6, _5, _4),
+            listOf(_7, _6, _5, _4, _3),
+            listOf(_6, _5, _4, _3, _2),
+            listOf(_5, _4, _3, _2, _A),
+            listOf(_4, _3, _2, _A),
+            listOf(_3, _2, _A),
+            listOf(_2, _A),
+        )
     }
-
-    lateinit var series: Series
-
-    val cards: List<Card> get() = Suit.collection.map { Card.create(this, it) }
+    val key: Long get() = topRankKey shr (index * 4)
+    val series: List<Rank> get() = seriesData[index]
+    val seriesKey: Long get() = series.map { it.key }.reduce { acc, key ->  acc.or(key)}
+    val cards: List<Card> get() = Suit.collection.map { Card(this, it) }
 }
