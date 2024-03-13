@@ -18,41 +18,30 @@ suspend fun main() = runBlocking {
     execute2()
 }
 
-private suspend fun execute() {
+private suspend fun execute2() {
     val scope = CoroutineScope(Dispatchers.Default)
     val format = DecimalFormat("#,##0")
     val time = TimeSource.Monotonic.markNow()
+    var count = 0
+    var elapsed = time.elapsedNow()
     val work = scope.launch {
-        println(
-            work().onEach { data ->
-                launch {
-                    printSample(data, time, format)
-//                    printAll(data, time, format)
-                }
-            }.count()
-        )
+        count = hands2().onEachIndexed { index, data -> launch { printSample(index, data, time, format) } }.count()
+        elapsed = time.elapsedNow()
     }
     work.join()
-}
-private fun execute2() {
-    val format = DecimalFormat("#,##0")
-    val time = TimeSource.Monotonic.markNow()
-    val count = format.format(hands().count())
-    val elapsed = time.elapsedNow()
     println("Count: $count  Elapsed: $elapsed")
 }
 
 private fun printSample(
-    data: HandData,
+    index: Int,
+    data: Sequence<Hand>,
     time: TimeSource.Monotonic.ValueTimeMark,
     format: DecimalFormat
 ) {
-    val index = data.index
-    val count = data.hands.count()
+    val count = data.count()
     val totalCount = count * (index + 1)
     val elapsed = time.elapsedNow()
-    val duration = elapsed.div(totalCount)
-    val first = data.hands.first()
+    val first = data.first()
     var handKey = first.handKey
     var base = Card.code(first.baseKey)
     var parent = Card.code(first.parentKey)
@@ -66,7 +55,6 @@ private fun printSample(
 
         Index:        $index
         Elapsed:      $elapsed
-        Duration:     $duration
         Count:        ${format.format(count)}
         Total Count:  ${format.format(totalCount)}
         Key           ${handKey}L
@@ -114,11 +102,38 @@ private suspend fun work() = flow {
         .forEachIndexed { index, hands -> emit(HandData(index, hands)) }
 }
 
-private fun hands() = Hand.baseHands//.take(1)
+private fun hands() = Hand.baseHands.take(133_784_560 / 420)
     .flatMap { it.pockets }
     .flatMap { it.flops }
     .flatMap { it.turns }
     .flatMap { it.rivers }
+
+val Hand.childrenBase: Sequence<Hand>
+    get() = edges.map { copy(baseKey =  handKey.or(it.key), handKey = 0L) }
+val Hand.childrenPocket: Sequence<Hand>
+    get() = edges.map { copy(pocketKey =  handKey.or(it.key), parentKey =  parentKey.or(handKey).or(it.key), handKey = 0L) }
+val Hand.childrenFlop: Sequence<Hand>
+    get() = edges.map { copy(flopKey =  handKey.or(it.key), parentKey =  parentKey.or(handKey).or(it.key), handKey = 0L) }
+private val Hand.childrenTurns: Sequence<Hand>
+    get() = cards.map { copy(turnKey = it.key, parentKey =  parentKey.or(it.key)) }
+
+private val Hand.childrenRivers: Sequence<Hand>
+    get() = cards.map { copy(riverKey = it.key, parentKey =  parentKey.or(it.key)) }
+private fun hands2() = Hand.childrenInitAll
+    .map {  it.children }
+    .map { hands -> hands.flatMap { it.children } }
+    .map { hands -> hands.flatMap { it.children } }
+    .map { hands -> hands.flatMap { it.children } }
+    .map { hands -> hands.flatMap { it.children } }
+    .map { hands -> hands.flatMap { it.childrenBase } }
+    .flatMap { hands -> hands.chunked(133_784_560 / 318_534).map{it.asSequence()}}
+    .map { hands -> hands.flatMap { it.childrenInit } }
+    .map { hands -> hands.flatMap { it.childrenPocket } }
+    .map { hands -> hands.flatMap { it.childrenInit } }
+    .map { hands -> hands.flatMap { it.children } }
+    .map { hands -> hands.flatMap { it.childrenFlop } }
+    .map { hands -> hands.flatMap { it.childrenTurns } }
+    .map { hands -> hands.flatMap { it.childrenRivers } }
 
 
 private val Hand.Companion.childrenInitAll: Sequence<Hand>
