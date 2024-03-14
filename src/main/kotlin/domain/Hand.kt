@@ -24,7 +24,10 @@ data class Hand(
         val allEdge = collection.flatMap { it.edges }.sortedByDescending { it.key }
     }
     val edges: Sequence<HandEdge>
-        get() = card.edges.map { HandEdge(it.cardIn, it.cardOut) }.asSequence()
+        get() = card.edges
+            .filter { (it.key.and(baseKey)) == it.key }
+            .filter { (it.key.and(parentKey)) == 0L }
+            .map { HandEdge(it.cardIn, it.cardOut) }.asSequence()
 
     fun print(): String {
         return """ 

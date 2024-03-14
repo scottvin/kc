@@ -29,7 +29,7 @@ private suspend fun execute2() {
             .map { hands -> hands.flatMap { it.children } }
             .map { hands -> hands.flatMap { it.children } }
             .map { hands -> hands.flatMap { it.children } }
-            .map { hands -> hands.flatMap { it.childrenBase }.take(1) }
+            .map { hands -> hands.flatMap { it.childrenBase }/*.take(1)*/ }/*.take(1)*/
             .flatMap { hands -> hands.chunked(133_784_560 / 318_534).map { it.asSequence() }  }
             .map { hands -> hands.flatMap { it.childrenInit } }
             .map { hands -> hands.flatMap { it.childrenPocket } }
