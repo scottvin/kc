@@ -21,7 +21,7 @@ private suspend fun execute2() {
     val scope = CoroutineScope(Dispatchers.Default)
     val format = DecimalFormat("#,##0")
     val time = TimeSource.Monotonic.markNow()
-    var count = 0L
+    var count = 0
     val work = scope.launch {
         count = Hand.childrenInitAll
             .map { it.children }
@@ -38,10 +38,8 @@ private suspend fun execute2() {
             .map { hands -> hands.flatMap { it.childrenFlop } }
             .map { hands -> hands.flatMap { it.childrenTurns } }
             .map { hands -> hands.flatMap { it.childrenRivers } }
-            .map {it.count().toLong()}
-            .sum()
-//            .onEachIndexed { index, data -> launch { printSample(index, data, time, format) } }
-//            .flatMap { it }
+            .onEachIndexed { index, data -> launch { printSample(index, data, time, format) } }
+            .count()
     }
     work.join()
     println("Count: ${format.format(count)}  Elapsed: ${time.elapsedNow()}")
