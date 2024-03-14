@@ -51,7 +51,7 @@ private fun printSample(
     time: TimeSource.Monotonic.ValueTimeMark,
     format: DecimalFormat
 ) {
-    val count = data.count()
+    val count = data.count().toLong()
     val totalCount = count * (index + 1)
     val elapsed = time.elapsedNow()
     val first = data.first()
