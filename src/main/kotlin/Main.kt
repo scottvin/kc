@@ -12,6 +12,8 @@ import kotlin.time.TimeSource
 
 @OptIn(ExperimentalUnsignedTypes::class)
 suspend fun main() = runBlocking {
+//    Hand.collection[50].edges.forEach { println(it) }
+//    Hand.allEdge.forEach { println(it) }
     execute2()
 }
 
@@ -19,7 +21,7 @@ private suspend fun execute2() {
     val scope = CoroutineScope(Dispatchers.Default)
     val format = DecimalFormat("#,##0")
     val time = TimeSource.Monotonic.markNow()
-    var count = 0
+    var count = 0L
     val work = scope.launch {
         count = Hand.childrenInitAll
             .map { it.children }
@@ -36,11 +38,13 @@ private suspend fun execute2() {
             .map { hands -> hands.flatMap { it.childrenFlop } }
             .map { hands -> hands.flatMap { it.childrenTurns } }
             .map { hands -> hands.flatMap { it.childrenRivers } }
-            .onEachIndexed { index, data -> launch { printSample(index, data, time, format) } }
-            .count()
+            .map {it.count().toLong()}
+            .sum()
+//            .onEachIndexed { index, data -> launch { printSample(index, data, time, format) } }
+//            .flatMap { it }
     }
     work.join()
-    println("Count: $count  Elapsed: ${time.elapsedNow()}")
+    println("Count: ${format.format(count)}  Elapsed: ${time.elapsedNow()}")
 }
 
 private fun printSample(
@@ -108,13 +112,7 @@ private fun printAll(
 val Hand.childrenBase: Sequence<Hand>
     get() = edges.map { copy(baseKey = handKey.or(it.key), handKey = 0L) }
 val Hand.childrenPocket: Sequence<Hand>
-    get() = edges.map {
-        copy(
-            pocketKey = handKey.or(it.key),
-            parentKey = parentKey.or(handKey).or(it.key),
-            handKey = 0L
-        )
-    }
+    get() = edges.map { copy(pocketKey = handKey.or(it.key), parentKey = parentKey.or(handKey).or(it.key), handKey = 0L) }
 val Hand.childrenFlop: Sequence<Hand>
     get() = edges.map { copy(flopKey = handKey.or(it.key), parentKey = parentKey.or(handKey).or(it.key), handKey = 0L) }
 private val Hand.childrenTurns: Sequence<Hand>

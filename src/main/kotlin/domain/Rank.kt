@@ -52,4 +52,5 @@ data class Rank(val index: Int, val code: String) {
     val series: List<Rank> get() = seriesData[index]
     val seriesKey: Long get() = series.map { it.key }.reduce { acc, key ->  acc.or(key)}
     val cards: List<Card> get() = Suit.collection.map { Card(this, it) }
+    val next: Rank get() = collection[(index + 1) % 13]
 }
