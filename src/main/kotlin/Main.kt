@@ -37,10 +37,19 @@ private suspend fun execute2() {
             .map { hands -> hands.flatMap { it.baseChildren } }
             .map { hands -> hands.flatMap { it.baseChildrenUpdate } }
             .flatMap { it }
+//            .filter { it.draw.key ==  Draw.STRAIGHT_FLUSH.key}
             .groupBy { it.draw }
             .forEach { (draw, hands) ->
                 launch {
-                    println("$draw.name  ${hands.count()} ${draw.sequence} ${hands.count() - draw.sequence}")
+                    println(
+                        """
+                        ${draw.name}  
+                        ${hands.count().format} 
+                        ${draw.sequence.format} 
+                        
+                        ${(hands.count() - draw.sequence).format}
+                        
+                        """.trimIndent())
                 }
             }
 //                .filter { it.draw.key == Draw.ROYAL_FLUSH.key }

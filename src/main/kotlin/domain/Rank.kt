@@ -33,6 +33,10 @@ data class Rank(val index: Int, val code: String) {
         val _2: Rank = collection[12]
 
         val seriesData = listOf(
+            listOf(_A),
+            listOf(_A, _K),
+            listOf(_A, _K, _Q),
+            listOf(_A, _K, _Q, _J),
             listOf(_A, _K, _Q, _J, _T),
             listOf(_K, _Q, _J, _T, _9),
             listOf(_Q, _J, _T, _9, _8),
@@ -42,10 +46,6 @@ data class Rank(val index: Int, val code: String) {
             listOf(_8, _7, _6, _5, _4),
             listOf(_7, _6, _5, _4, _3),
             listOf(_6, _5, _4, _3, _2),
-            listOf(_5, _4, _3, _2, _A),
-            listOf(_4, _3, _2, _A),
-            listOf(_3, _2, _A),
-            listOf(_2, _A),
         )
     }
     val key: Long get() = topRankKey shr (index * 4)

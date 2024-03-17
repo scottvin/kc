@@ -16,19 +16,10 @@ data class HandEdge(
 
     val drawUpdate: (Hand) -> Hand
         get() = when {
-            isStraightFlushMatch -> { hand ->
-                updateHand(
-                    hand,
-                    flushKey = flushKey(hand),
-                    straightKey = straightKey(hand),
-                    straightFlushKey = straightFlushKey(hand),
-                )
-            }
 
             isStraightMatch -> { hand ->
                 updateHand(
                     hand,
-                    flushKey = flushKey(hand),
                     straightKey = straightKey(hand),
                 )
             }
@@ -42,16 +33,9 @@ data class HandEdge(
             }
 
             else -> { hand ->
-                updateHand(
-                    hand,
-                    flushKey = flushKey(hand),
-                    highCardKey = highCardKey(hand)
-                )
+                updateHand(hand)
             }
         }
-
-    private fun highCardKey(hand: Hand) = hand.highCardKey.or(key)
-
     private fun flushKey(hand: Hand): Long {
         val flushKey = hand.baseKey.or(key).and(hand.card.suit.key)
         val flushBits = flushKey.countOneBits()
@@ -71,7 +55,7 @@ data class HandEdge(
     }
 
     private fun straightKey(hand: Hand): Long {
-        return hand.straightKey.or(cardOut.key)
+        return hand.straightKey.or(cardOut.key).and(cardOut.rank.seriesKey)
     }
     private fun straightFlushKey(hand: Hand): Long {
         val straightFlushKey = hand.straightFlushKey.or(cardOut.key).and(cardOut.suit.key)
@@ -82,23 +66,19 @@ data class HandEdge(
     private fun updateHand(
         // Builder pattern
         hand: Hand,
-        flushKey: Long = hand.flushKey,
         straightKey: Long = hand.straightKey,
-        straightFlushKey: Long = hand.straightFlushKey,
         kindKey: Long = hand.kindKey,
         twoKindKey: Long = hand.twoKindKey,
-        highCardKey: Long = hand.highCardKey,
     ): Hand {
         return hand.copy(
             handIndex = hand.handIndex + 1,
             baseKey = hand.baseKey.or(key),
             card = cardOut,
             straightKey = straightKey,
-            straightFlushKey = straightFlushKey,
-            flushKey = flushKey,
+            flushKey = flushKey(hand),
+            straightFlushKey = straightFlushKey(hand),
             kindKey = kindKey,
             twoKindKey = twoKindKey,
-            highCardKey = highCardKey,
         )
     }
 }
