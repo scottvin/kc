@@ -8,8 +8,6 @@ data class Card(
         val collection = Rank.collection.flatMap { it.cards }
         val allEdge = collection.flatMap { it.edges }.sortedByDescending { it.key }
         val top = collection[0]
-        fun code(key: Long): String = cards(key).joinToString(" ") { c -> c.code }
-        fun cards(key: Long): List<Card> = collection.filter { (it.key and key) == it.key }
     }
 
     val key: Long get() = rank.key.and(suit.key)

@@ -2,6 +2,7 @@ package domain
 
 data class Hand(
     val card: Card,
+    val handIndex: Int = 1,
     val handKey: Long = 0L,
     val pocketKey: Long = 0L,
     val flopKey: Long = 0L,
@@ -9,40 +10,39 @@ data class Hand(
     val riverKey: Long = 0L,
     val baseKey: Long = (0L).inv(),
     val parentKey: Long = (0L),
-    val straightFlushKey: Long = (0L),
     val flushKey: Long = (0L),
-    val straightKey: Long = (0L),
+    val straightKey: Long = card.key,
+    val straightFlushKey: Long = card.key,
+    val kindKey: Long = (0L),
     val twoKindKey: Long = (0L),
-    val oneKindKey: Long = (0L),
     val highCardKey: Long = (0L),
-    var draw: Draw = Draw.HIGH_CARD
 ) {
 
 
     companion object {
         val collection: List<Hand> = Card.collection.map { Hand(it) }
-        val allEdge = collection.flatMap { it.edges }.sortedByDescending { it.key }
+        val allEdge = collection.flatMap { it.filteredEdges }.sortedByDescending { it.key }
     }
-    val edges: Sequence<HandEdge>
+
+    val flushBits: Int get() = flushKey.countOneBits()
+    val royalFlushKey: Long get() =  straightFlushKey.and(Rank._A.seriesKey)
+    val royalFlushBits: Int get() = royalFlushKey.countOneBits()
+    val straightFlushBits: Int get() = straightFlushKey.countOneBits()
+    val straightBits: Int get() = straightKey.countOneBits()
+    val kindBits get() = kindKey.countOneBits()
+    val twoKindBits get() = twoKindKey.countOneBits()
+    val highCardBits get() = kindKey.countOneBits()
+    val last get() = handIndex == 7
+
+    val filteredEdges: Sequence<HandEdge>
         get() = card.edges
             .filter { (it.key.and(baseKey)) == it.key }
             .filter { (it.key.and(parentKey)) == 0L }
             .map { HandEdge(it.cardIn, it.cardOut) }.asSequence()
 
-    fun print(): String {
-        return """ 
-            ************************************
-            Key:     ${this.handKey}L
-            Base:    ${Card.code(this.baseKey)}
-            Parent:  ${Card.code(this.parentKey)}
-            Hand:    ${Card.code(this.handKey)}
-            Draw:    ${Card.code(this.pocketKey)} ${Card.code(this.flopKey)} ${Card.code(this.turnKey)} ${Card.code(this.riverKey)}
-            pocket:  ${Card.code(this.pocketKey)}
-            flop:    ${Card.code(this.flopKey)}
-            Turn:    ${Card.code(this.turnKey)}
-            River:   ${Card.code(this.riverKey)}
-        """.trimIndent()
-    }
+    val edges: Sequence<HandEdge>
+        get() = card.edges.map { HandEdge(it.cardIn, it.cardOut) }.asSequence()
+
 
 }
 
