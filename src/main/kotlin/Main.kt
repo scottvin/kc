@@ -1,4 +1,6 @@
-import domain.*
+import domain.Card
+import domain.Draw
+import domain.Hand
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,10 +35,14 @@ private suspend fun execute2() {
             .map { hands -> hands.flatMap { it.baseChildren } }
             .map { hands -> hands.flatMap { it.baseChildren } }
             .map { hands -> hands.flatMap { it.baseChildren } }
-            .map { hands -> hands.flatMap { it.baseChildrenUpdate }}
+            .map { hands -> hands.flatMap { it.baseChildrenUpdate } }
             .flatMap { it }
-            .groupBy { it.draw.name }
-            .forEach{ (name, hands) -> launch { println("$name  ${hands.count()}") } }
+            .groupBy { it.draw }
+            .forEach { (draw, hands) ->
+                launch {
+                    println("$draw.name  ${hands.count()} ${draw.sequence} ${hands.count() - draw.sequence}")
+                }
+            }
 //                .filter { it.draw.key == Draw.ROYAL_FLUSH.key }
 //                .filter { it.baseKey == 1016L }
 //                .filter { it.baseKey == 7183L }
@@ -45,7 +51,7 @@ private suspend fun execute2() {
 //                .filter { it.straightBits >= 5 }
 //                .filter { (it.straightKey and it.flushKey).countOneBits() > 5 }
 //            .take(1)
-            }
+    }
 //            .take(1)
 //            .flatMap { hands -> hands.chunked(133_784_560 / 318_534).map { it.asSequence() } }
 //            .map { hands -> hands.flatMap { it.childrenInit } }
@@ -110,10 +116,10 @@ private fun printSample(
 }
 
 val Long.cards: List<Card> get() = Card.collection.filter { (it.key and this) == it.key }
-val Long.code:String get() = cards.joinToString(" ") { c -> c.code }
+val Long.code: String get() = cards.joinToString(" ") { c -> c.code }
 val formatLong = DecimalFormat("#,##0")
-val Long.format:String get() = formatLong.format(this)
-val Int.format:String get() = formatLong.format(this)
+val Long.format: String get() = formatLong.format(this)
+val Int.format: String get() = formatLong.format(this)
 
 val Hand.childrenPocket: Sequence<Hand>
     get() = filteredEdges.map {
@@ -122,7 +128,13 @@ val Hand.childrenPocket: Sequence<Hand>
         )
     }
 val Hand.childrenFlop: Sequence<Hand>
-    get() = filteredEdges.map { copy(flopKey = handKey.or(it.key), parentKey = parentKey.or(handKey).or(it.key), handKey = 0L) }
+    get() = filteredEdges.map {
+        copy(
+            flopKey = handKey.or(it.key),
+            parentKey = parentKey.or(handKey).or(it.key),
+            handKey = 0L
+        )
+    }
 private val Hand.childrenTurns: Sequence<Hand>
     get() = cards.map { copy(turnKey = it.key, parentKey = parentKey.or(it.key)) }
 
@@ -147,8 +159,9 @@ val Hand.cards: Sequence<Card>
     get() = Card.collection.filter { (baseKey and it.key) == it.key }.filter { (parentKey and it.key) == 0L }
         .asSequence()
 
-val Hand.print: String get() {
-    return """ 
+val Hand.print: String
+    get() {
+        return """ 
             ************************************
             Key:     ${this.handKey}L
             Base:    ${this.baseKey.code}
@@ -160,17 +173,18 @@ val Hand.print: String get() {
             Turn:    ${this.turnKey.code}
             River:   ${this.riverKey.code}
         """.trimIndent()
-}
+    }
 
-val Hand.draw: Draw get() = when {
-    royalFlushBits >= 5 -> Draw.ROYAL_FLUSH
-    straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
-    kindBits == 4 -> Draw.QUADRUPLE
-    twoKindBits == 5 -> Draw.FULL_HOUSE
-    flushBits >= 5 -> Draw.FLUSH
-    straightBits >= 5 -> Draw.STRAIGHT
-    kindBits == 3 -> Draw.TRIPLE
-    twoKindBits == 4 -> Draw.TWO_PAIR
-    kindBits == 2 -> Draw.PAIR
-    else -> Draw.HIGH_CARD
-}
+val Hand.draw: Draw
+    get() = when {
+        royalFlushBits >= 5 -> Draw.ROYAL_FLUSH
+        straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+        kindBits == 4 -> Draw.QUADRUPLE
+        twoKindBits == 5 -> Draw.FULL_HOUSE
+        flushBits >= 5 -> Draw.FLUSH
+        straightBits >= 5 -> Draw.STRAIGHT
+        kindBits == 3 -> Draw.TRIPLE
+        twoKindBits == 4 -> Draw.TWO_PAIR
+        kindBits == 2 -> Draw.PAIR
+        else -> Draw.HIGH_CARD
+    }
