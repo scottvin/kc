@@ -35,7 +35,7 @@ private suspend fun execute2() {
             .map { hands -> hands.flatMap { it.baseChildren } }
             .map { hands -> hands.flatMap { it.baseChildren } }
             .map { hands -> hands.flatMap { it.baseChildren } }
-            .map { hands -> hands.flatMap { it.baseChildrenUpdate } }
+            .map { hands -> hands.flatMap { it.baseChildren } }
             .flatMap { it }
 //            .filter { it.draw.key ==  Draw.STRAIGHT_FLUSH.key}
             .groupBy { it.draw }
@@ -131,13 +131,13 @@ val Long.format: String get() = formatLong.format(this)
 val Int.format: String get() = formatLong.format(this)
 
 val Hand.childrenPocket: Sequence<Hand>
-    get() = filteredEdges.map {
+    get() = filteredCards.map {
         copy(
             pocketKey = handKey.or(it.key), parentKey = parentKey.or(handKey).or(it.key), handKey = 0L
         )
     }
 val Hand.childrenFlop: Sequence<Hand>
-    get() = filteredEdges.map {
+    get() = filteredCards.map {
         copy(
             flopKey = handKey.or(it.key),
             parentKey = parentKey.or(handKey).or(it.key),
@@ -153,19 +153,18 @@ private val Hand.childrenRivers: Sequence<Hand>
 private val Hand.Companion.baseChildrenInit: Sequence<Hand>
     get() = Card.collection.asSequence().map { Hand(card = it, baseKey = 0L) }
 val Hand.children: Sequence<Hand>
-    get() = filteredEdges.map { copy(handKey = handKey.or(it.key), card = it.cardOut) }
+    get() = filteredCards.map { copy(handKey = handKey.or(it.key), card = it) }
 
 val Hand.baseChildren: Sequence<Hand>
-    get() = edges.map { it.drawUpdate(this) }
-
-val Hand.baseChildrenUpdate: Sequence<Hand>
-    get() = edges.map { it.drawUpdate(this) }
+    get() = filteredCards.map { copy(card = it, baseKey = baseKey.or(it.key)) }
 
 val Hand.childrenInit: Sequence<Hand>
     get() = cards.map { copy(card = it, handKey = it.key) }
 
 val Hand.cards: Sequence<Card>
-    get() = Card.collection.filter { (baseKey and it.key) == it.key }.filter { (parentKey and it.key) == 0L }
+    get() = Card.collection
+        .filter { (baseKey and it.key) == it.key }
+        .filter { (parentKey and it.key) == 0L }
         .asSequence()
 
 val Hand.print: String

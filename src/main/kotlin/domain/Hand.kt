@@ -22,7 +22,6 @@ data class Hand(
 
     companion object {
         val collection: List<Hand> = Card.collection.map { Hand(it) }
-        val allEdge = collection.flatMap { it.filteredEdges }.sortedByDescending { it.key }
     }
 
     val flushBits: Int get() = flushKey.countOneBits()
@@ -34,14 +33,15 @@ data class Hand(
     val highCardBits get() = kindKey.countOneBits()
     val last get() = handIndex == 7
 
-    val filteredEdges: Sequence<HandEdge>
-        get() = card.edges
+    val filteredCards: Sequence<Card>
+        get() = card.remaining
             .filter { (it.key.and(baseKey)) == it.key }
             .filter { (it.key.and(parentKey)) == 0L }
-            .map { HandEdge(it.cardIn, it.cardOut) }.asSequence()
+            .asSequence()
 
-    val edges: Sequence<HandEdge>
-        get() = card.edges.map { HandEdge(it.cardIn, it.cardOut) }.asSequence()
+    val cards: Sequence<Card>
+        get() = card.remaining
+            .asSequence()
 
 
 }
