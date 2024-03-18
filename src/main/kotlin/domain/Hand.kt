@@ -11,8 +11,9 @@ data class Hand(
     val baseKey: Long = (0L).inv(),
     val parentKey: Long = (0L),
     val flushKey: Long = (0L),
-    val straightKey: Long = card.key,
+    val royalFlushKey: Long = card.key,
     val straightFlushKey: Long = card.key,
+    val straightKey: Long = card.key,
     val kindKey: Long = (0L),
     val twoKindKey: Long = (0L),
     val highCardKey: Long = (0L),
@@ -25,7 +26,6 @@ data class Hand(
     }
 
     val flushBits: Int get() = flushKey.countOneBits()
-    val royalFlushKey: Long get() =  straightFlushKey.and(Rank._A.seriesKey)
     val royalFlushBits: Int get() = royalFlushKey.countOneBits()
     val straightFlushBits: Int get() = straightFlushKey.countOneBits()
     val straightBits: Int get() = straightKey.countOneBits()
