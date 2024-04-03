@@ -47,6 +47,8 @@ data class Rank(val index: Int, val code: String) {
             listOf(_7, _6, _5, _4, _3),
             listOf(_6, _5, _4, _3, _2),
         )
+        val ROYAL_RANKS_KEY: Long get() = listOf(_A, _K, _Q, _J, _T).map { it.key }.reduce { acc, key ->  acc.or(key)};
+        val WHEEL_RANKS_KEY: Long get() = listOf(_5, _4, _3, _2, _A).map { it.key }.reduce { acc, key ->  acc.or(key)};
     }
     val key: Long get() = topRankKey shr (index * 4)
     val series: List<Rank> get() = seriesData[index]

@@ -3,6 +3,9 @@ import domain.Draw
 import domain.Hand
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.DecimalFormat
@@ -26,99 +29,108 @@ suspend fun main() = runBlocking {
 private suspend fun execute2() {
     val scope = CoroutineScope(Dispatchers.Default)
     val time = TimeSource.Monotonic.markNow()
-    var count = 0L
+    var count = 0
     val work = scope.launch {
-//        count = Hand.baseChildrenInit
-        Hand.baseChildrenInit
-            .map { it.baseChildren }
-            .map { hands -> hands.flatMap { it.baseChildren } }
-            .map { hands -> hands.flatMap { it.baseChildren } }
-            .map { hands -> hands.flatMap { it.baseChildren } }
-            .map { hands -> hands.flatMap { it.baseChildren } }
-            .map { hands -> hands.flatMap { it.baseChildren } }
-            .flatMap { it }
-//            .filter { it.draw.key ==  Draw.STRAIGHT_FLUSH.key}
-            .groupBy { it.draw }
-            .forEach { (draw, hands) ->
-                launch {
-                    println(
-                        """
-                        ${draw.name}  
-                        ${hands.count().format} 
-                        ${draw.sequence.format} 
-                        
-                        ${(hands.count() - draw.sequence).format}
-                        
-                        """.trimIndent())
-                }
-            }
-//                .filter { it.draw.key == Draw.ROYAL_FLUSH.key }
-//                .filter { it.baseKey == 1016L }
-//                .filter { it.baseKey == 7183L }
-//                .filter { it.flushBits >= 5 }
-//                .filter { it.kindBits == 2 }
-//                .filter { it.straightBits >= 5 }
-//                .filter { (it.straightKey and it.flushKey).countOneBits() > 5 }
-//            .take(1)
+         count =
+//        Hand.baseHands
+//            .chunked(10_000)
+//             .onEach { hands ->  launch { printSample(hands) } }
+//             .map { it.count().toLong() }
+//             .reduce{acc, l ->  acc + l}
+
+        hands().count()
+//            .groupBy { it.draw }
+//            .forEach { (draw, hands) -> printSample(draw, hands, time) }
     }
-//            .take(1)
-//            .flatMap { hands -> hands.chunked(133_784_560 / 318_534).map { it.asSequence() } }
-//            .map { hands -> hands.flatMap { it.childrenInit } }
-//            .map { hands -> hands.flatMap { it.childrenPocket } }
-//            .map { hands -> hands.flatMap { it.childrenInit } }
-//            .map { hands -> hands.flatMap { it.children } }
-//            .map { hands -> hands.flatMap { it.childrenFlop } }
-//            .map { hands -> hands.flatMap { it.childrenTurns } }
-//            .map { hands -> hands.flatMap { it.childrenRivers } }
-//            .onEachIndexed { index, data -> launch { printSample(index, data, time) } }
-//            .map { it.count().toLong() }
-//            .sum()
-//    }
     work.join()
     println("Count: ${count.format}  Elapsed: ${time.elapsedNow()}")
 }
 
-private fun printSample(
-    index: Int, data: Sequence<Hand>, time: TimeSource.Monotonic.ValueTimeMark
+fun hands() = flow {
+    Hand.baseHands/*.chunked(10_000)*/.forEach { emit(it) }
+}
+private fun printSample2(
+//    index: Int,
+    draw: Draw,
+    data: List<Hand>,
+    time: TimeSource.Monotonic.ValueTimeMark
 ) {
     val count = data.count().toLong()
-    val totalCount = count * (index + 1)
     val first = data.first()
-    val handKey = first.handKey
     val base = first.baseKey.code
-    val parent = first.parentKey.code
-    val hand = first.handKey.code
-    val pocket = first.pocketKey.code
-    val flop = first.flopKey.code
-    val turn = first.turnKey.code
-    val river = first.riverKey.code
     val flushKey = first.flushKey.code
     val straightKey = first.straightKey.code
     val straightFlushKey = (first.straightKey and first.flushKey).code
-    val royalFlushKey = (first.royalFlushKey and first.flushKey).code
+//    val royalFlushKey = (first.royalFlushKey).code
     val kindKey = first.kindKey.code
-    val twoKindKey = first.twoKindKey.code
-    val highCardKey = first.highCardKey.code
+//    val twoKindKey = first.twoKindKey.code
+//    val highCardKey = first.highCardKey.code
 
     println(
         """
 
-        Index:          ${index.format}
         Elapsed:        ${time.elapsedNow()}
         Count:          ${count.format}
-        Total Count:    ${totalCount.format}
-        Key:            ${handKey}L
+        Base:           $base ${first.baseKey}L
+        Royal Flush:    $ royalFlushKey
+        Straight Flush: $straightFlushKey
+        Flush:          $flushKey
+        Straight:       $straightKey
+        Kind:           $kindKey
+        Two Kind:       $ twoKindKey
+        HighCard:       $ highCardKey
+        Draw:           ${draw.name}
+                  
+        """.trimIndent()
+    )
+}
+
+private fun printSample(
+//    index: Int,
+    draw: Draw,
+    data: List<Hand>,
+    time: TimeSource.Monotonic.ValueTimeMark
+) {
+    val count = data.count().toLong()
+//    val totalCount = count * (index + 1)
+    val first = data.first()
+//    val handKey = first.key
+    val base = first.baseKey.code
+    val parent = first.parentKey.code
+//    val hand = first.key.code
+//    val pocket = first.pocketKey.code
+//    val flop = first.flopKey.code
+//    val turn = first.turnKey.code
+//    val river = first.riverKey.code
+    val flushKey = first.flushKey.code
+    val straightKey = first.straightKey.code
+    val straightFlushKey = (first.straightFlushKey).code
+    val royalFlushKey = (first.royalFlushKey).code
+    val kindKey = first.kindKey.code
+    val twoKindKey = first.twoKindKey.code
+//    val highCardKey = first.highCardKey.code
+//    val draw = first.draw;
+
+    println(
+        """
+
+        Draw Type:      ${first.draw.name}
+        Index:          $ {index.format}
+        Elapsed:        ${time.elapsedNow()}
+        Count:          ${count.format} Sequence: ${draw.sequence7.format} Diff: ${(count - draw.sequence7).format}
+        Total Count:    $ {totalCount.format}
+        Key:            $ {handKey}L
         Base:           $base ${first.baseKey}L
         Parent:         $parent
-        Hand:           $hand
+        Hand:           $ hand
         Royal Flush:    $royalFlushKey
         Straight Flush: $straightFlushKey
         Flush:          $flushKey
         Straight:       $straightKey
         Kind:           $kindKey
         Two Kind:       $twoKindKey
-        HighCard:       $highCardKey
-        Draw:           [$pocket] [$flop] [$turn] [$river] ${first.draw}
+        HighCard:       $ highCardKey
+        Draw:           [$ pocket] [$ flop] [$ turn] [$ river]
                   
         """.trimIndent()
     )
@@ -130,67 +142,16 @@ val formatLong = DecimalFormat("#,##0")
 val Long.format: String get() = formatLong.format(this)
 val Int.format: String get() = formatLong.format(this)
 
-val Hand.childrenPocket: Sequence<Hand>
-    get() = filteredCards.map {
-        copy(
-            pocketKey = handKey.or(it.key), parentKey = parentKey.or(handKey).or(it.key), handKey = 0L
-        )
-    }
-val Hand.childrenFlop: Sequence<Hand>
-    get() = filteredCards.map {
-        copy(
-            flopKey = handKey.or(it.key),
-            parentKey = parentKey.or(handKey).or(it.key),
-            handKey = 0L
-        )
-    }
-private val Hand.childrenTurns: Sequence<Hand>
-    get() = cards.map { copy(turnKey = it.key, parentKey = parentKey.or(it.key)) }
-
-private val Hand.childrenRivers: Sequence<Hand>
-    get() = cards.map { copy(riverKey = it.key, parentKey = parentKey.or(it.key)) }
-
-private val Hand.Companion.baseChildrenInit: Sequence<Hand>
-    get() = Card.collection.asSequence().map { Hand(card = it, baseKey = 0L) }
-val Hand.children: Sequence<Hand>
-    get() = filteredCards.map { copy(handKey = handKey.or(it.key), card = it) }
-
-val Hand.baseChildren: Sequence<Hand>
-    get() = filteredCards.map { copy(card = it, baseKey = baseKey.or(it.key)) }
-
-val Hand.childrenInit: Sequence<Hand>
-    get() = cards.map { copy(card = it, handKey = it.key) }
-
-val Hand.cards: Sequence<Card>
-    get() = Card.collection
-        .filter { (baseKey and it.key) == it.key }
-        .filter { (parentKey and it.key) == 0L }
-        .asSequence()
-
-val Hand.print: String
-    get() {
-        return """ 
-            ************************************
-            Key:     ${this.handKey}L
-            Base:    ${this.baseKey.code}
-            Parent:  ${this.parentKey.code}
-            Hand:    ${this.handKey.code}
-            Draw:    ${this.pocketKey.code} ${this.flopKey.code} ${this.turnKey.code} ${this.riverKey.code}
-            pocket:  ${this.pocketKey.code}
-            flop:    ${this.flopKey.code}
-            Turn:    ${this.turnKey.code}
-            River:   ${this.riverKey.code}
-        """.trimIndent()
-    }
-
 val Hand.draw: Draw
     get() = when {
         royalFlushBits >= 5 -> Draw.ROYAL_FLUSH
         straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+        wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
         kindBits == 4 -> Draw.QUADRUPLE
         twoKindBits == 5 -> Draw.FULL_HOUSE
         flushBits >= 5 -> Draw.FLUSH
         straightBits >= 5 -> Draw.STRAIGHT
+        wheelBits >= 5 -> Draw.STRAIGHT
         kindBits == 3 -> Draw.TRIPLE
         twoKindBits == 4 -> Draw.TWO_PAIR
         kindBits == 2 -> Draw.PAIR

@@ -9,6 +9,10 @@ data class Suit(val index: Int, val code: String) {
             Suit(2, "D"),
             Suit(3, "C"),
         )
+        val _S: Suit = collection[0];
+        val _H: Suit = collection[1];
+        val _D: Suit = collection[2];
+        val _C: Suit = collection[3];
     }
     val key: Long get() = topSuitKey shr index
 }
