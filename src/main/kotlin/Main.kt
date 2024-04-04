@@ -2,7 +2,6 @@ import domain.Card
 import domain.Hand
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import java.text.DecimalFormat
 import kotlin.time.TimeSource
@@ -19,7 +18,7 @@ private suspend fun execute() {
 }
 fun hands() = flow {
 //    Hand.baseHands/*.chunked(10_000)*/.forEach { emit(it) }
-    Hand.allChildren/*.chunked(10_000)*/.forEach { emit(it) }
+    Hand.allHands/*.chunked(10_000)*/.forEach { emit(it) }
 }
 val Long.cards: List<Card> get() = Card.collection.filter { (it.key and this) == it.key }
 val Long.code: String get() = cards.joinToString(" ") { c -> c.code }
