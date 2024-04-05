@@ -10,10 +10,16 @@ data class Card(
 
     val key: Long get() = rank.key.and(suit.key)
     val code: String get() = rank.code + suit.code
-    val edges: List<CardEdge>
-        get() = remaining.map { CardEdge(this, it) }
     val remaining: List<Card>
         get() = collection.filter { it.key < key }
+    val hand: Hand get() = Hand(card = this)
+    val hands0:Sequence<Hand> get() = sequenceOf(hand)
+    val hands1:Sequence<Hand> get() = hands0.flatMap { it.children }
+    val hands2:Sequence<Hand> get() = hands1.flatMap { it.children }
+    val hands3:Sequence<Hand> get() = hands2.flatMap { it.children }
+    val hands4:Sequence<Hand> get() = hands3.flatMap { it.children }
+    val hands5:Sequence<Hand> get() = hands4.flatMap { it.children }
+    val hands6:Sequence<Hand> get() = hands5.flatMap { it.children }
 }
 
 data class CardEdge(
