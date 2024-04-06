@@ -36,7 +36,7 @@ val Card.hands3: Sequence<Hand> get() = hands2.children
 val Card.hands4: Sequence<Hand> get() = hands3.children
 val Card.hands5: Sequence<Hand> get() = hands4.children
 val Card.hands6: Sequence<Hand> get() = hands5.children
-val Card.hands7: Sequence<Hand> get() = hands6.children.take(1)
+val Card.hands7: Sequence<Hand> get() = hands6.children//.take(1)
 
 val Hand.pocket1: Sequence<Hand> get() = drawChildrenInit
 val Hand.pocket: Sequence<Hand> get() = pocket1.drawChildren
