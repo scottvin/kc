@@ -1,13 +1,12 @@
 package domain
 
 data class Hand(
-    val card: Card
+    val card: Card,
+    val key:Long = card.key,
+    val drawKey:Long = 0L,
+    val parent: Hand? = null
 ) {
-    companion object {
-        val hands7: Sequence<Hand> get() = Card.collection.asSequence().flatMap { it.hands6 }
-    }
-    val children: Sequence<Hand>
-        get() = card.remaining.asSequence()
-            .map { copy(card = it) }
+//    val key:Long = card.key.or(parent?.key ?: 0)
 }
+
 
