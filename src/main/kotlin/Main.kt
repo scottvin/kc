@@ -1,32 +1,39 @@
-import domain.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import domain.Card
+import domain.Hand
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
 import java.text.DecimalFormat
 import kotlin.time.TimeSource
 
 @OptIn(ExperimentalCoroutinesApi::class)
 suspend fun main() = runBlocking {
     val time = TimeSource.Monotonic.markNow()
-    val count = Card.allHands()
-//        .take(1)
-//        .onEach { println("${it.key.code}") }
-        .flatMap { it.pocket }
-//        .onEach { println("${it.drawKey.code}") }
-        .flatMap { it.flop }
-//        .onEach { println("${it.drawKey.code}") }
-        .flatMap { it.turn }
-//        .onEach { println("${it.drawKey.code}") }
-        .flatMap { it.river }
-//        .onEach { println(it.key.code) }
-        .count()
-//    val count = Card.collection[6].pocket2
+    val scope = CoroutineScope(Dispatchers.Default)
+    val count = scope.async {
+        Card.allHands()
+            .chunked(100_000)
+            .toList()
+            .mapIndexed() { index, hands ->
+                scope.async {
+                    val result = hands.asSequence()
+                        .flatMap { it.pocket }
+                        .flatMap { it.flop }
+                        .flatMap { it.turn }
+                        .flatMap { it.river }
+                    println("Count: ${(result.count().toLong() * (index + 1)).format}  Elapsed: ${time.elapsedNow()}")
+                    result
+                }
+            }
+            .awaitAll()
+            .sumOf {
+                it.count().toLong()
+            }
+    }.await()
     println("Count: ${count.format}  Elapsed: ${time.elapsedNow()}")
+//        .count()
+//    val count = Card.collection[6].pocket2
 }
 
-fun hands(): Flow<Hand> = flow {
-//    Card.allHands().forEach { emit(it) }
-}
 
 fun Card.Companion.allHands(): Sequence<Hand> = collection.asSequence().hands
 val Card.hand: Hand get() = Hand(card = this)
