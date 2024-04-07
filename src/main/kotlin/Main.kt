@@ -9,27 +9,26 @@ import kotlin.time.TimeSource
 suspend fun main() = runBlocking {
     val time = TimeSource.Monotonic.markNow()
     val scope = CoroutineScope(Dispatchers.Default)
-    val count = scope.async {
-        Card.allHands()
-            .chunked(100_000)
-            .toList()
-            .mapIndexed() { index, hands ->
+    val work = scope.async {
+        Card.collection
+            .map {
                 scope.async {
-                    val result = hands.asSequence()
+                    val count = it.hands7
                         .flatMap { it.pocket }
                         .flatMap { it.flop }
                         .flatMap { it.turn }
                         .flatMap { it.river }
-                    println("Count: ${(result.count().toLong() * (index + 1)).format}  Elapsed: ${time.elapsedNow()}")
-                    result
+                        .count()
+                        .toLong()
+                    println("Card: ${it.code}  Count: ${count.format}  Elapsed: ${time.elapsedNow()}")
+                    count
                 }
             }
             .awaitAll()
-            .sumOf {
-                it.count().toLong()
-            }
-    }.await()
-    println("Count: ${count.format}  Elapsed: ${time.elapsedNow()}")
+            .sumOf { it }
+    }
+    work.join()
+    println("Count: ${work.await().format}  Elapsed: ${time.elapsedNow()}")
 //        .count()
 //    val count = Card.collection[6].pocket2
 }
