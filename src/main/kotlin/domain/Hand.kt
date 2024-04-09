@@ -2,11 +2,10 @@ package domain
 
 data class Hand(
     val card: Card,
-    val key:Long = card.key,
-    val drawKey:Long = 0L,
-    val parent: Hand? = null
+    val baseKey: Long = card.key,
+    val parentKey: Long = 0L,
+    val drawKey: Long = 0L,
 ) {
-//    val key:Long = card.key.or(parent?.key ?: 0)
 }
 
 
