@@ -18,20 +18,18 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
                         .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
                 }
-            }.awaitAll()
+            }
+            .awaitAll()
+            .asSequence()
+            .flatten()
+            .chunked(10_000)
             .map { hands ->
                 async {
-                    hands
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                }
-            }.awaitAll()
-            .flatMap { it }
-            .map { hand ->
-                async {
-                    sequenceOf(hand)
+                    hands.asSequence()
                         .flatMap { it.drawsInit }
                         .flatMap { it.draws }
                         .flatMap { it.drawsInit }
@@ -40,23 +38,25 @@ suspend fun main() = runBlocking {
                         .flatMap { it.drawsInit }
                         .flatMap { it.drawsInit }
                 }
-            }.awaitAll()
-            .filter { it.count() > 0 }
+            }
             .forEach { hands ->
                 launch {
-                    val count = hands.count().toLong()
-                    val first = hands.firstOrNull()
-                    total.addAndGet(count)
-                    println(
-                        """
-                        |First: ${first?.baseKey?.code} 
-                        |First: ${first?.parentKey?.code} 
+                    hands.await().let { hands ->
+                        val count = hands.count().toLong()
+                        val first = hands.firstOrNull()
+                        total.addAndGet(count)
+                        println(
+                            """
+                        |Bass: ${first?.baseKey?.code} 
+                        |Parent: ${first?.parentKey?.code} 
+                        |Draw: ${first?.drawKey?.code} 
                         |Total: ${total.toLong().format}  
                         |Count: ${count.format}  
                         |Elapsed: ${time.elapsedNow()}
                         |
                         |""".trimMargin()
-                    )
+                        )
+                    }
                 }
             }
     }
@@ -67,20 +67,37 @@ suspend fun main() = runBlocking {
 val Card.hand: Hand get() = Hand(card = this)
 val Hand.children: Sequence<Hand>
     get() = card.remaining.asSequence()
-        .map { copy(baseKey = baseKey.or(it.key), card = it) }
+        .map { copy(parent = this, baseKey = baseKey.or(it.key), card = it) }
+
+val Hand.cards: List<Card>
+    get() = Card.collection.filter { baseKey.and(it.key) == it.key }
 
 val Hand.drawsInit: Sequence<Hand>
-    get() = Card.collection.asSequence()
-        .filter { baseKey.and(it.key) == it.key }
-        .filter { parentKey.and(it.key) == 0L }
-        .map { copy(drawKey = it.key, parentKey = parentKey.or(it.key), card = it) }
+    get() =
+        cards.asSequence()
+            .filter { parentKey.and(it.key) == 0L }
+            .map {
+                copy(
+                    parent = this,
+                    drawKey = it.key,
+                    parentKey = parentKey.or(it.key),
+                    card = it
+                )
+            }
 
 val Hand.draws: Sequence<Hand>
-    get() = card.remaining.asSequence()
-        .filter { baseKey.and(it.key) == it.key }
-        .filter { parentKey.and(it.key) == 0L }
-        .filter { it.key < card.key }
-        .map { copy(drawKey = drawKey.or(it.key), parentKey = parentKey.or(it.key), card = it) }
+    get() =
+        cards.asSequence()
+            .filter { it.key < card.key }
+            .map {
+                copy(
+                    parent = this,
+                    drawKey = drawKey.or(it.key),
+                    parentKey = parentKey.or(it.key),
+                    card = it
+                )
+            }
+
 
 val Long.cards: List<Card> get() = Card.collection.filter { (it.key and this) == it.key }
 val Long.code: String get() = cards.joinToString(" ") { c -> c.code }
