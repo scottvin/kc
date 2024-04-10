@@ -12,7 +12,7 @@ suspend fun main() = runBlocking {
     var total = AtomicLong()
     val work = scope.launch {
         Card.collection
-            .take(1)
+//            .take(1)
             .map { card ->
                 async {
                     sequenceOf(Hand(card))
@@ -22,13 +22,13 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
                         .flatMap { it.children }
-                        .take(1)
+//                        .take(1)
                 }
             }
             .awaitAll()
             .asSequence()
             .flatten()
-            .chunked(12_500)
+            .chunked(1_250)
             .map { hands ->
                 async {
                     hands.asSequence()
@@ -40,26 +40,27 @@ suspend fun main() = runBlocking {
             }
             .forEach { hands ->
                 launch {
-                    hands.await().let { hands ->
-                        val count = hands.count().toLong()
-                        val first = hands.firstOrNull()
-                        total.addAndGet(count)
-                        println(
-                            """
-                        |Bass:    ${first?.baseKey?.code} 
-                        |Parent:  ${first?.parentKey?.code} 
-                        |Draw:    ${first?.drawKey?.code} 
-                        |Pocket:  ${first?.pocketKey?.code} 
-                        |Flow:    ${first?.flopKey?.code} 
-                        |Turn:    ${first?.turnKey?.code} 
-                        |River:   ${first?.riverKey?.code} 
-                        |Total:   ${total.toLong().format}  
-                        |Count:   ${count.format}  
-                        |Elapsed: ${time.elapsedNow()}
-                        |
-                        |""".trimMargin()
-                        )
-                    }
+                    hands.await()
+                        .let { hands ->
+                            val count = hands.count().toLong()
+                            total.addAndGet(count)
+//                            val first = hands.firstOrNull()
+//                            println(
+//                                """
+//                                |Bass:    ${first?.baseKey?.code}
+//                                |Parent:  ${first?.parentKey?.code}
+//                                |Draw:    ${first?.drawKey?.code}
+//                                |Pocket:  ${first?.pocketKey?.code}
+//                                |Flow:    ${first?.flopKey?.code}
+//                                |Turn:    ${first?.turnKey?.code}
+//                                |River:   ${first?.riverKey?.code}
+//                                |Total:   ${total.toLong().format}
+//                                |Count:   ${count.format}
+//                                |Elapsed: ${time.elapsedNow()}
+//                                |
+//                                |""".trimMargin()
+//                            )
+                        }
                 }
             }
     }
