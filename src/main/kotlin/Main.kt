@@ -28,7 +28,7 @@ suspend fun main() = runBlocking {
             .awaitAll()
             .asSequence()
             .flatten()
-            .chunked(100_000)
+            .chunked(125_000)
             .map { hands ->
                 async {
                     hands.asSequence()
