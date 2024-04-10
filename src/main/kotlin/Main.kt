@@ -11,7 +11,8 @@ suspend fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.Default)
     var total = AtomicLong()
     val work = scope.launch {
-        Card.collection.take(1)
+        Card.collection
+//            .take(1)
             .map { card ->
                 async {
                     sequenceOf(Hand(card))
@@ -20,13 +21,14 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
                         .flatMap { it.children }
-                        .flatMap { it.children }.take(1)
+                        .flatMap { it.children }
+//                        .take(1)
                 }
             }
             .awaitAll()
             .asSequence()
             .flatten()
-            .chunked(20_000)
+            .chunked(100_000)
             .map { hands ->
                 async {
                     hands.asSequence()
