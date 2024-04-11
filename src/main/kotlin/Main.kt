@@ -1,4 +1,5 @@
 import domain.Card
+import domain.Draw
 import domain.Hand
 import kotlinx.coroutines.*
 import java.text.DecimalFormat
@@ -23,17 +24,34 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
 //                        .filter { it.straightKey.countOneBits() < 5 && it.straightFlushKey.countOneBits() < 5 && it.kindKey.countOneBits() == 0 }
-                        .filter { it.twoKindKey.countOneBits() == 4 && it.kindKey.countOneBits() == 2}
-                        .take(1)
+//                        .take(1)
                 }
             }
+//            .map { hands ->
+//                async {
+//                    hands.await()
+//                        .filter {
+////                            it.kindKey.countOneBits() == 4
+////                                    it.twoKindKey.countOneBits() != 4 &&
+//                                    it.straightKey.countOneBits() == 5
+////                                    it.straightFlushKey.countOneBits() < 5
+////                                    it.flushKey.countOneBits() < 5
+//                        }
+//                }
+//            }
             .awaitAll()
             .asSequence()
             .flatten()
-            .chunked(1_250)
+            .chunked(125_000)
             .map { hands ->
                 async {
                     hands.asSequence()
+                        .map { if(it.straightKey.countOneBits() == 5) it.copy(draw = Draw.STRAIGHT) else it}
+                }
+            }
+            .map { hands ->
+                async {
+                    hands.await()
                         .flatMap { it.pockets }
                         .flatMap { it.flops }
                         .flatMap { it.turns }
@@ -74,6 +92,63 @@ val Hand.children: Sequence<Hand>
                 card = it,
             )
         }
+//val Hand.children: Sequence<Hand>
+//    get() = card.edge.asSequence()
+//        .map {
+//            copy(
+//                parent = this,
+//                baseKey = baseKey.or(it.cardOut.key),
+//                card = it.cardOut,
+//            )
+//        }
+//val Hand.straightFlushKey: Long
+//    get() {
+//        return parent?.let { baseKey.and(card.rank.seriesKey).and(card.suit.key) } ?: 0L
+//    }
+val Hand.straightFlushKey: Long
+    get() {
+        return parent?.let {
+            val newStraightFlushKey = baseKey.and(card.rank.seriesKey).and(card.suit.key)
+            return if (it.straightFlushKey.countOneBits() >= newStraightFlushKey.countOneBits()) it.straightFlushKey
+            else newStraightFlushKey
+        } ?: 0L
+    }
+
+val Hand.flushKey: Long
+    get() {
+        return parent?.let {
+            val newFlushKey = baseKey.and(card.suit.key)
+            if (it.flushKey.countOneBits() >= newFlushKey.countOneBits()) it.flushKey else newFlushKey
+        } ?: 0L
+    }
+
+val Hand.kindKey: Long
+    get() {
+        return parent?.let {
+            val newKindKey = baseKey.and(card.rank.key)
+            if (newKindKey.countOneBits() < 2 || it.kindKey.countOneBits() >= newKindKey.countOneBits()) it.kindKey else newKindKey
+        } ?: 0L
+    }
+
+val Hand.twoKindKey: Long
+    get() {
+        return parent?.let {
+            val newKindKey = baseKey.and(card.rank.key)
+            if(newKindKey.countOneBits() >= 2) {
+                val newTwoKindKey = it.twoKindKey.or(baseKey.and(card.rank.key))
+                if (it.twoKindKey.countOneBits() >= newTwoKindKey.countOneBits()) it.twoKindKey else newTwoKindKey
+            } else it.twoKindKey
+        } ?: 0L
+    }
+
+val Hand.straightKey: Long
+    get() {
+        val cardKey = card.key
+        return parent?.let {
+            val newStraightKey = it.straightKey.or(it.card.rank.next.key.and(cardKey)).and(card.rank.seriesKey)
+            if (it.straightKey.countOneBits() >= newStraightKey.countOneBits()) it.straightKey else newStraightKey
+        } ?: cardKey
+    }
 
 val Hand.initDrawCards: List<Card>
     get() = Card.collection
