@@ -22,6 +22,7 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
                         .flatMap { it.children }
+//                        .filter { it.straightKey.countOneBits() < 5 && it.straightFlushKey.countOneBits() < 5 && it.kindKey.countOneBits() == 0 }
 //                        .take(1)
                 }
             }
@@ -44,22 +45,16 @@ suspend fun main() = runBlocking {
                         .let { hands ->
                             val count = hands.count().toLong()
                             total.addAndGet(count)
-//                            val first = hands.firstOrNull()
-//                            println(
-//                                """
-//                                |Bass:    ${first?.baseKey?.code}
-//                                |Parent:  ${first?.parentKey?.code}
-//                                |Draw:    ${first?.drawKey?.code}
-//                                |Pocket:  ${first?.pocketKey?.code}
-//                                |Flow:    ${first?.flopKey?.code}
-//                                |Turn:    ${first?.turnKey?.code}
-//                                |River:   ${first?.riverKey?.code}
-//                                |Total:   ${total.toLong().format}
-//                                |Count:   ${count.format}
-//                                |Elapsed: ${time.elapsedNow()}
-//                                |
-//                                |""".trimMargin()
-//                            )
+                            val first = hands.firstOrNull()
+                            first?.print
+                            println(
+                                """
+                                    |Total:   ${total.toLong().format}
+                                    |Count:   ${count.format}
+                                    |Elapsed: ${time.elapsedNow()}
+                                    |
+                                """.trimMargin()
+                            )
                         }
                 }
             }
@@ -69,25 +64,32 @@ suspend fun main() = runBlocking {
 
 }
 
-val Card.hand: Hand get() = Hand(card = this)
+
+
 val Hand.children: Sequence<Hand>
     get() = card.remaining.asSequence()
-        .map { copy(parent = this, baseKey = baseKey.or(it.key), card = it) }
+        .map {
+            copy(
+                parent = this,
+                baseKey = baseKey.or(it.key),
+                card = it,
+            )
+        }
 
-val Hand.initCards: List<Card>
+val Hand.initDrawCards: List<Card>
     get() = Card.collection
         .filter { baseKey.and(it.key) == it.key }
         .filter { parentKey.and(it.key) == 0L }
 
-val Hand.cards: List<Card>
-    get() = initCards.filter { it.key < card.key }
+val Hand.drawCards: List<Card>
+    get() = initDrawCards.filter { it.key < card.key }
 
 val Hand.drawsInit: Sequence<Hand>
-    get() = initCards.asSequence()
+    get() = initDrawCards.asSequence()
         .map { copy(parent = this, drawKey = it.key, parentKey = parentKey.or(it.key), card = it) }
 
 val Hand.draws: Sequence<Hand>
-    get() = cards.asSequence()
+    get() = drawCards.asSequence()
         .map { copy(parent = this, drawKey = drawKey.or(it.key), parentKey = parentKey.or(it.key), card = it) }
 
 val Hand.pockets: Sequence<Hand>
@@ -116,14 +118,19 @@ val Hand.rivers: Sequence<Hand>
 val Hand.print: Unit
     get() = println(
         """
-        |Bass:    ${baseKey.code} 
-        |Parent:  ${parentKey.code} 
-        |Draw:    ${drawKey.code} 
-        |Pocket:  ${pocketKey.code} 
-        |Flow:    ${flopKey.code} 
-        |Turn:    ${turnKey.code} 
-        |River:   ${riverKey.code} 
-        |
+            |
+            |Bass:          ${baseKey.code} 
+            |Parent:        ${parentKey.code} 
+            |Draw:          ${drawKey.code} 
+            |Pocket:        ${pocketKey.code} 
+            |Flow:          ${flopKey.code} 
+            |Turn:          ${turnKey.code} 
+            |River:         ${riverKey.code} 
+            |TwoKind        ${twoKindKey.code}
+            |kind           ${kindKey.code}
+            |flush          ${flushKey.code}
+            |straight       ${straightKey.code}
+            |straightFlush  ${straightFlushKey.code}
         |""".trimMargin()
     )
 
