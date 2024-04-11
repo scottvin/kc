@@ -1,6 +1,7 @@
 import domain.Card
 import domain.Draw
 import domain.Hand
+import domain.Rank
 import kotlinx.coroutines.*
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicLong
@@ -24,6 +25,8 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
 //                        .filter { it.straightKey.countOneBits() < 5 && it.straightFlushKey.countOneBits() < 5 && it.kindKey.countOneBits() == 0 }
+                        .filter { hand -> hand.baseKey.and(Rank._A.key).countOneBits() == 3 }
+                        .filter { hand -> hand.baseKey.and(Rank._K.key).countOneBits() == 2 }
 //                        .take(1)
                 }
             }
@@ -46,7 +49,18 @@ suspend fun main() = runBlocking {
             .map { hands ->
                 async {
                     hands.asSequence()
-                        .map { if(it.straightKey.countOneBits() == 5) it.copy(draw = Draw.STRAIGHT) else it}
+                        .map {
+                            when {
+                                it.straightFlushKey.countOneBits() >5 -> it.copy(draw = Draw.STRAIGHT_FLUSH)
+                                it.kindKey.countOneBits() == 4 -> it.copy(draw = Draw.QUADRUPLE)
+                                it.twoKindKey.countOneBits() == 5 -> it.copy(draw = Draw.FULL_HOUSE)
+                                it.flushKey.countOneBits() > 5 -> it.copy(draw = Draw.FLUSH)
+                                it.kindKey.countOneBits() == 3 -> it.copy(draw = Draw.TRIPLE)
+                                it.twoKindKey.countOneBits() == 4 -> it.copy(draw = Draw.TWO_PAIR)
+                                it.kindKey.countOneBits() == 2 -> it.copy(draw = Draw.PAIR)
+                                else -> it
+                            }
+                        }
                 }
             }
             .map { hands ->
@@ -126,18 +140,17 @@ val Hand.kindKey: Long
     get() {
         return parent?.let {
             val newKindKey = baseKey.and(card.rank.key)
-            if (newKindKey.countOneBits() < 2 || it.kindKey.countOneBits() >= newKindKey.countOneBits()) it.kindKey else newKindKey
+            if (newKindKey.countOneBits() < 2 || it.kindKey.countOneBits() >= newKindKey.countOneBits()) {
+                it.kindKey
+            } else newKindKey
         } ?: 0L
     }
 
 val Hand.twoKindKey: Long
     get() {
         return parent?.let {
-            val newKindKey = baseKey.and(card.rank.key)
-            if(newKindKey.countOneBits() >= 2) {
-                val newTwoKindKey = it.twoKindKey.or(baseKey.and(card.rank.key))
-                if (it.twoKindKey.countOneBits() >= newTwoKindKey.countOneBits()) it.twoKindKey else newTwoKindKey
-            } else it.twoKindKey
+            val newTwoKindKey = it.kindKey.or(kindKey)
+            if (it.twoKindKey.countOneBits() >= newTwoKindKey.countOneBits()) it.twoKindKey else newTwoKindKey
         } ?: 0L
     }
 
@@ -193,6 +206,7 @@ val Hand.print: Unit
     get() = println(
         """
             |
+            |Draw:          ${draw.name} 
             |Bass:          ${baseKey.code} 
             |Parent:        ${parentKey.code} 
             |Draw:          ${drawKey.code} 
