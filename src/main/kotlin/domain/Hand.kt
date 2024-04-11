@@ -19,13 +19,9 @@ data class Hand(
     val straightFlushKey: Long
         get() {
             return parent?.let {
-                if (it.card.rank.next.key == card.rank.key) {
-                    val newStraightFlushKey = baseKey.and(card.rank.seriesKey).and(card.suit.key)
-                    return if (it.straightFlushKey.countOneBits() >= newStraightFlushKey.countOneBits()) it.straightFlushKey
-                    else newStraightFlushKey
-                } else {
-                    it.straightFlushKey
-                }
+                val newStraightFlushKey = baseKey.and(card.rank.seriesKey).and(card.suit.key)
+                return if (it.straightFlushKey.countOneBits() >= newStraightFlushKey.countOneBits()) it.straightFlushKey
+                else newStraightFlushKey
             } ?: 0L
         }
 
@@ -40,20 +36,16 @@ data class Hand(
     val kindKey: Long
         get() {
             return parent?.let {
-                if (it.card.rank.key == card.rank.key) {
-                    val newKindKey = baseKey.and(card.rank.key)
-                    if (it.kindKey.countOneBits() >= newKindKey.countOneBits()) it.kindKey else newKindKey
-                } else it.kindKey
+                val newKindKey = baseKey.and(card.rank.key)
+                if (it.kindKey.countOneBits() >= newKindKey.countOneBits()) it.kindKey else newKindKey
             } ?: 0L
         }
 
     val twoKindKey: Long
         get() {
             return parent?.let {
-                if (it.card.rank.key == card.rank.key) {
-                    val newTwoKindKey = baseKey.and(card.rank.key)
-                    if (it.twoKindKey.countOneBits() >= newTwoKindKey.countOneBits()) it.twoKindKey else newTwoKindKey
-                } else it.twoKindKey
+                val newTwoKindKey = it.twoKindKey.or(it.kindKey)
+                if (it.twoKindKey.countOneBits() >= newTwoKindKey.countOneBits()) it.twoKindKey else newTwoKindKey
             } ?: 0L
         }
 
@@ -61,19 +53,15 @@ data class Hand(
         get() {
             val cardKey = card.key
             return parent?.let {
-                if ( it.card.rank.next.key == card.rank.key) {
-                    val rank = it.card.rank
-                    val isSeries = rank.next.key.and(cardKey) == cardKey
-                    val isSameKind = rank.key.and(cardKey) == cardKey
-                    val newStraightKey = when {
-                        isSeries -> it.straightKey.or(cardKey)
-                        isSameKind -> it.straightKey
-                        else -> cardKey
-                    }.and(card.rank.seriesKey)
-                    if (it.straightKey.countOneBits() >= newStraightKey.countOneBits()) it.straightKey else newStraightKey
-                } else {
-                    it.straightKey
-                }
+                val rank = it.card.rank
+                val isSeries = rank.next.key.and(cardKey) == cardKey
+                val isSameKind = rank.key.and(cardKey) == cardKey
+                val newStraightKey = when {
+                    isSeries -> it.straightKey.or(cardKey)
+                    isSameKind -> it.straightKey
+                    else -> cardKey
+                }.and(card.rank.seriesKey)
+                if (it.straightKey.countOneBits() >= newStraightKey.countOneBits()) it.straightKey else newStraightKey
             } ?: cardKey
         }
 }

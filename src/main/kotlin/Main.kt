@@ -23,7 +23,8 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
 //                        .filter { it.straightKey.countOneBits() < 5 && it.straightFlushKey.countOneBits() < 5 && it.kindKey.countOneBits() == 0 }
-//                        .take(1)
+                        .filter { it.twoKindKey.countOneBits() == 4 && it.kindKey.countOneBits() == 2}
+                        .take(1)
                 }
             }
             .awaitAll()
@@ -63,8 +64,6 @@ suspend fun main() = runBlocking {
     println("Count: ${total.toLong().format}  Elapsed: ${time.elapsedNow()}")
 
 }
-
-
 
 val Hand.children: Sequence<Hand>
     get() = card.remaining.asSequence()
