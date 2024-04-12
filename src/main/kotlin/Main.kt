@@ -23,10 +23,14 @@ suspend fun main() = runBlocking {
                         .flatMap { it.children }
                         .flatMap { it.children }
                         .flatMap { it.children }
-                        .flatMap { it.children }
+                        .flatMap { it.childrenLast }
 //                        .filter { it.straightKey.countOneBits() < 5 && it.straightFlushKey.countOneBits() < 5 && it.kindKey.countOneBits() == 0 }
-                        .filter { hand -> hand.baseKey.and(Rank._A.key).countOneBits() == 3 }
-                        .filter { hand -> hand.baseKey.and(Rank._K.key).countOneBits() == 2 }
+//                        .filter { hand -> hand.baseKey.and(Rank._A.key).countOneBits() == 1 }
+//                        .filter { hand -> hand.baseKey.and(Rank._K.key).countOneBits() == 1 }
+//                        .filter { hand -> hand.baseKey.and(Rank._Q.key).countOneBits() == 1 }
+//                        .filter { hand -> hand.baseKey.and(Rank._J.key).countOneBits() == 1 }
+//                        .filter { hand -> hand.baseKey.and(Rank._T.key).countOneBits() == 1 }
+//                        .filter { hand -> hand.baseKey.and(Rank._9.key).countOneBits() == 2 }
 //                        .take(1)
                 }
             }
@@ -50,28 +54,29 @@ suspend fun main() = runBlocking {
                 async {
                     hands.asSequence()
                         .map {
-                            when {
-                                it.straightFlushKey.countOneBits() >5 -> it.copy(draw = Draw.STRAIGHT_FLUSH)
-                                it.kindKey.countOneBits() == 4 -> it.copy(draw = Draw.QUADRUPLE)
-                                it.twoKindKey.countOneBits() == 5 -> it.copy(draw = Draw.FULL_HOUSE)
-                                it.flushKey.countOneBits() > 5 -> it.copy(draw = Draw.FLUSH)
-                                it.kindKey.countOneBits() == 3 -> it.copy(draw = Draw.TRIPLE)
-                                it.twoKindKey.countOneBits() == 4 -> it.copy(draw = Draw.TWO_PAIR)
-                                it.kindKey.countOneBits() == 2 -> it.copy(draw = Draw.PAIR)
+                            val key = when {
+                                it.straightFlushKey.countOneBits() >= 5 -> it.copy(draw = Draw.STRAIGHT_FLUSH)
+                                it.quadrupleKey.countOneBits() == 4 -> it.copy(draw = Draw.QUADRUPLE)
+                                it.fullHouseKey.countOneBits() >= 5 -> it.copy(draw = Draw.FULL_HOUSE)
+                                it.flushKey.countOneBits() >= 5 -> it.copy(draw = Draw.FLUSH)
+                                it.triplesKey.countOneBits() == 3 -> it.copy(draw = Draw.TRIPLE)
+                                it.twoPairKey.countOneBits() == 4 -> it.copy(draw = Draw.TWO_PAIR)
+                                it.pairsKey.countOneBits() == 2 -> it.copy(draw = Draw.PAIR)
                                 else -> it
                             }
+                            key
                         }
                 }
             }
-            .map { hands ->
-                async {
-                    hands.await()
-                        .flatMap { it.pockets }
-                        .flatMap { it.flops }
-                        .flatMap { it.turns }
-                        .flatMap { it.rivers }
-                }
-            }
+//            .map { hands ->
+//                async {
+//                    hands.await()
+//                        .flatMap { it.pockets }
+//                        .flatMap { it.flops }
+//                        .flatMap { it.turns }
+//                        .flatMap { it.rivers }
+//                }
+//            }
             .forEach { hands ->
                 launch {
                     hands.await()
@@ -99,13 +104,12 @@ suspend fun main() = runBlocking {
 
 val Hand.children: Sequence<Hand>
     get() = card.remaining.asSequence()
-        .map {
-            copy(
-                parent = this,
-                baseKey = baseKey.or(it.key),
-                card = it,
-            )
-        }
+        .map { copy(parent = this, baseKey = baseKey.or(it.key), card = it) }
+
+val Hand.childrenLast: Sequence<Hand>
+    get() = card.remaining.asSequence()
+        .map { copy(parent = this, baseKey = baseKey.or(it.key), card = it, last = true) }
+
 //val Hand.children: Sequence<Hand>
 //    get() = card.edge.asSequence()
 //        .map {
@@ -122,35 +126,94 @@ val Hand.children: Sequence<Hand>
 val Hand.straightFlushKey: Long
     get() {
         return parent?.let {
-            val newStraightFlushKey = baseKey.and(card.rank.seriesKey).and(card.suit.key)
-            return if (it.straightFlushKey.countOneBits() >= newStraightFlushKey.countOneBits()) it.straightFlushKey
-            else newStraightFlushKey
+            if(it.straightFlushKey.countOneBits() < 5) {
+                val newStraightFlushKey = baseKey.and(card.rank.seriesKey).and(card.suit.key)
+                if (newStraightFlushKey.countOneBits() > it.straightFlushKey.countOneBits()) {
+                    return newStraightFlushKey
+                }
+            }
+            it.straightFlushKey
         } ?: 0L
     }
 
 val Hand.flushKey: Long
     get() {
         return parent?.let {
-            val newFlushKey = baseKey.and(card.suit.key)
-            if (it.flushKey.countOneBits() >= newFlushKey.countOneBits()) it.flushKey else newFlushKey
+            if (it.flushKey.countOneBits() < 5) {
+                val newFlushKey = baseKey.and(card.suit.key)
+                if (newFlushKey.countOneBits() > it.flushKey.countOneBits()) {
+                    return newFlushKey
+                }
+            }
+            return it.flushKey
         } ?: 0L
     }
 
 val Hand.kindKey: Long
     get() {
         return parent?.let {
-            val newKindKey = baseKey.and(card.rank.key)
-            if (newKindKey.countOneBits() < 2 || it.kindKey.countOneBits() >= newKindKey.countOneBits()) {
-                it.kindKey
-            } else newKindKey
+            if (it.card.rank.key != card.rank.key) {
+                val kindKey = it.baseKey.and(it.card.rank.key)
+                if (kindKey.countOneBits() >= 2) {
+                    return kindKey
+                }
+            } else if (last) {
+                val kindKey = baseKey.and(card.rank.key)
+                if (kindKey.countOneBits() >= 2) {
+                    return kindKey
+                }
+
+            }
+            return it.kindKey
+        } ?: 0L
+    }
+val Hand.pairsKey: Long
+    get() {
+        return parent?.let {
+            if (kindKey.countOneBits() == 2 && it.pairsKey.countOneBits() < 4) {
+                return it.pairsKey.or(kindKey)
+            }
+            return it.pairsKey
         } ?: 0L
     }
 
-val Hand.twoKindKey: Long
+val Hand.triplesKey: Long
     get() {
         return parent?.let {
-            val newTwoKindKey = it.kindKey.or(kindKey)
-            if (it.twoKindKey.countOneBits() >= newTwoKindKey.countOneBits()) it.twoKindKey else newTwoKindKey
+            if (kindKey.countOneBits() == 3 && it.triplesKey.countOneBits() < 6) {
+                return it.triplesKey.or(kindKey)
+            }
+            return it.triplesKey
+        } ?: 0L
+    }
+
+val Hand.quadrupleKey: Long
+    get() {
+        return parent?.let {
+            if (kindKey.countOneBits() == 4 && it.quadrupleKey.countOneBits() < 4) {
+                return it.quadrupleKey.or(kindKey)
+            }
+            return it.quadrupleKey
+        } ?: 0L
+    }
+
+val Hand.fullHouseKey: Long
+    get() {
+        return parent?.let {
+            if (it.fullHouseKey.countOneBits() < 5) {
+                return it.fullHouseKey.or(triplesKey).or(pairsKey)
+            }
+            return it.fullHouseKey
+        } ?: 0L
+    }
+
+val Hand.twoPairKey: Long
+    get() {
+        return parent?.let {
+            if (it.twoPairKey.countOneBits() < 4) {
+                return it.twoPairKey.or(pairsKey)
+            }
+            return it.twoPairKey
         } ?: 0L
     }
 
@@ -214,11 +277,14 @@ val Hand.print: Unit
             |Flow:          ${flopKey.code} 
             |Turn:          ${turnKey.code} 
             |River:         ${riverKey.code} 
-            |TwoKind        ${twoKindKey.code}
-            |kind           ${kindKey.code}
-            |flush          ${flushKey.code}
-            |straight       ${straightKey.code}
-            |straightFlush  ${straightFlushKey.code}
+            |Pairs          ${pairsKey.code}
+            |Triples        ${triplesKey.code}
+            |Quadruple      ${quadrupleKey.code}
+            |Full House     ${fullHouseKey.code}
+            |Two Pair       ${twoPairKey.code}
+            |Flush          ${flushKey.code}
+            |Straight       ${straightKey.code}
+            |Straight Flush ${straightFlushKey.code}
         |""".trimMargin()
     )
 
