@@ -28,12 +28,12 @@ suspend fun main() = runBlocking {
             .forEach { emit(it) }
     }
     val consumer = scope.launch {
-        processor.collect{ data ->
+        processor.collect { data ->
             launch {
                 data.forEach {
                     val start = time.elapsedNow()
                     val draw = when {
-                        it.royalFlushKey >= 5 -> Draw.ROYAL_FLUSH
+                        it.royalFlushBits >= 5 -> Draw.ROYAL_FLUSH
                         it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
                         it.wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
                         it.quadrupleBits == 4 -> Draw.QUADRUPLE
@@ -87,27 +87,6 @@ val Hand.childrenLast: Sequence<Hand>
     get() = card.remaining.asSequence()
         .map { copy(parent = this, baseKey = baseKey.or(it.key), card = it, index = index + 1, last = true) }
 
-val Hand.rankKey: Long get() = baseKey.and(card.rank.key)
-val Hand.rankBits: Int get() = rankKey.countOneBits()
-val Hand.kindBits: Int get() = kindKey.countOneBits()
-val Hand.kindKey: Long
-    get() {
-        if (index >= 2) {
-            return parent?.let {
-                if (it.card.rank.key != card.rank.key) {
-                    if (it.rankBits >= 2) {
-                        return it.rankKey
-                    }
-                } else if (last) {
-                    if (rankBits >= 2) {
-                        return rankKey
-                    }
-                }
-                return 0L
-            } ?: 0L
-        }
-        return 0L
-    }
 val Hand.royalFlushBits: Int get() = royalFlushKey.countOneBits()
 val Hand.royalFlushKey: Long
     get() {
@@ -157,7 +136,8 @@ val Hand.quadrupleKey: Long
     get() {
         if (index >= 4) {
             return parent?.let {
-                if (kindBits == 4 && it.quadrupleBits < 4) {
+                val kindKey = baseKey.and(card.rank.key)
+                if (kindKey.countOneBits() == 4 && it.quadrupleBits < 4) {
                     return it.quadrupleKey.or(kindKey)
                 }
                 return it.quadrupleKey
@@ -235,7 +215,8 @@ val Hand.triplesKey: Long
     get() {
         if (index >= 3) {
             return parent?.let {
-                if (kindBits == 3 && it.triplesBits < 6) {
+                val kindKey = baseKey.and(card.rank.key)
+                if (it.triplesBits < 6 && kindKey.countOneBits() == 3) {
                     return it.triplesKey.or(kindKey)
                 }
                 return it.triplesKey
@@ -263,7 +244,8 @@ val Hand.pairsKey: Long
     get() {
         if (index >= 2) {
             return parent?.let {
-                if (kindBits == 2 && it.pairsBits < 4) {
+                val kindKey = baseKey.and(card.rank.key)
+                if (it.pairsBits < 4 && kindKey.countOneBits() == 2) {
                     return it.pairsKey.or(kindKey)
                 }
                 return it.pairsKey
