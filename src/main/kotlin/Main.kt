@@ -14,51 +14,17 @@ suspend fun main() = runBlocking {
     val total = AtomicLong()
     val work = scope.launch {
         Card.collection.asSequence()
-            .map { card ->
-                async {
-                    sequenceOf(Hand(index = 1, card = card))
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.childrenLast }
-
-//                        .filter { it.baseKey.and(Rank._A.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._K.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._Q.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._J.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._T.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._9.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._8.key).countOneBits() == 1 }
-
-//                        .filter { it.baseKey.and(Rank._A.key).and(Suit._S.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._K.key).and(Suit._S.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._Q.key).and(Suit._S.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._J.key).and(Suit._S.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._T.key).and(Suit._S.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._9.key).and(Suit._S.key).countOneBits() == 1 }
-//                        .filter { it.baseKey.and(Rank._8.key).and(Suit._S.key).countOneBits() == 1 }
-
-//                        .filter { it.baseKey.and(Rank._A.key).and(Suit._S.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._K.key).and(Suit._C.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._Q.key).and(Suit._D.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._J.key).and(Suit._H.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._T.key).and(Suit._S.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._9.key).and(Suit._C.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._8.key).and(Suit._D.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._7.key).and(Suit._H.key) > 0 }
-
-//                        .filter { it.baseKey.and(Rank._5.key).and(Suit._C.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._4.key).and(Suit._D.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._3.key).and(Suit._H.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._2.key).and(Suit._S.key) > 0 }
-//                        .filter { it.baseKey.and(Rank._A.key).and(Suit._C.key) > 0 }
-                }
-            }
+            .map { Hand(index = 1, card = it) }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.childrenLast }
+            .chunked( 1_000)
             .forEach { data ->
                 launch {
-                    data.await().let { hands ->
+                    data.let { hands ->
                         val count = hands
                             .map {
                                 val start = time.elapsedNow()
@@ -79,8 +45,6 @@ suspend fun main() = runBlocking {
                                 draw.time.addAndGet(time.elapsedNow().minus(start).toLong(DurationUnit.MILLISECONDS))
                                 it.copy(draw = draw)
                             }
-//                            .filter { it.draw.key == Draw.HIGH_CARD.key }
-//                            .onEach { println(it.print) }
                             .onEach { it.draw.total.incrementAndGet() }
                             .count()
                         total.addAndGet(count.toLong())
