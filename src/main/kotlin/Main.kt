@@ -13,18 +13,27 @@ suspend fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.Default)
     val total = AtomicLong()
     val work = scope.launch {
-        Card.collection.asSequence()
-            .map { Hand(index = 1, card = it) }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.childrenLast }
+        Card.collection
+            .map { card ->
+                async {
+                    sequenceOf(card)
+                        .map { Hand(index = 1, card = it) }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.childrenLast }
+                        .toList()
+                }
+            }
+            .awaitAll()
+            .flatten()
+            .asSequence()
             .chunked( 1_000)
             .forEach { data ->
                 launch {
-                    data.let { hands ->
+                    data.asSequence().let { hands ->
                         val count = hands
                             .map {
                                 val start = time.elapsedNow()
