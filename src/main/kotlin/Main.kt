@@ -24,7 +24,7 @@ suspend fun main() = runBlocking {
             .flatMap { it.children }
             .flatMap { it.children }
             .flatMap { it.childrenLast }
-            .chunked(1_000)
+            .chunked(1_000_000)
             .forEach { emit(it) }
     }
     val consumer = scope.launch {
@@ -47,7 +47,7 @@ suspend fun main() = runBlocking {
                         else -> Draw.HIGH_CARD
                     }
                     draw.time.addAndGet(time.elapsedNow().minus(start).toLong(DurationUnit.MILLISECONDS))
-                    total.incrementAndGet()
+                    draw.total.incrementAndGet()
                     it.copy(draw = draw)
                 }
             }
