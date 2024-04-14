@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="51d3f0c0-493f-4c68-b4d5-e98d8487662f" name="Changes" comment="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <change afterPath="$PROJECT_DIR$/kc.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/domain/Draw.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/domain/Draw.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/domain/Hand.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/domain/Hand.kt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kc" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kc" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="kc" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin Jupyter Notebook" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;scottvin&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/scottvin/kc.git&quot;,
+    &quot;accountId&quot;: &quot;fe3df1ab-2f18-4327-95cd-1e78ee3010fe&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2drPnIaGrRrx5HINiKCEdx2K8An" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Build kc.executor": "Run",
+    "Gradle.kc [clean].executor": "Run",
+    "Kotlin.MainKt.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/vince/projects/kc",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.46206897",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "kotlin-gradle-user-dirs": [
+      "C:\\Users\\vince\\.gradle"
+    ]
+  }
+}]]></component>
+  <component name="RunManager" selected="Kotlin.MainKt">
+    <configuration name="kc [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="MainKt" type="JetRunConfigurationType" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="MainKt" />
+      <module name="kc.main" />
+      <shortenClasspath name="NONE" />
+      <option name="VM_PARAMETERS" value="-Xmx12g" />
+      <extension name="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        </ENTRIES>
+      </extension>
+      <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">
+        <option name="credential" />
+        <option name="region" />
+        <option name="useCurrentConnection" value="false" />
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.kc [clean]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9f38398b9061-18abd8497189-intellij.indexing.shared.core-IU-241.14494.240" />
+        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-IU-241.14494.240" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="51d3f0c0-493f-4c68-b4d5-e98d8487662f" name="Changes" comment="" />
+      <created>1710763389745</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1710763389745</updated>
+      <workItem from="1710763390769" duration="604000" />
+      <workItem from="1710765453053" duration="3665000" />
+      <workItem from="1710865532542" duration="1027000" />
+      <workItem from="1710867255827" duration="866000" />
+      <workItem from="1710868718334" duration="7495000" />
+      <workItem from="1710880798865" duration="2626000" />
+      <workItem from="1710906396864" duration="10594000" />
+      <workItem from="1711027971267" duration="751000" />
+      <workItem from="1711028741086" duration="1920000" />
+      <workItem from="1711070617161" duration="600000" />
+      <workItem from="1711231091445" duration="1125000" />
+      <workItem from="1711721092463" duration="82415000" />
+      <workItem from="1712170460652" duration="3706000" />
+      <workItem from="1712241772491" duration="579000" />
+      <workItem from="1712242632177" duration="12218000" />
+      <workItem from="1712277993479" duration="13431000" />
+      <workItem from="1712321659284" duration="21812000" />
+      <workItem from="1712350455978" duration="115652000" />
+      <workItem from="1712759737814" duration="5017000" />
+      <workItem from="1712781218417" duration="17876000" />
+      <workItem from="1712800219604" duration="10120000" />
+      <workItem from="1712858395807" duration="9814000" />
+      <workItem from="1712883179012" duration="10727000" />
+      <workItem from="1712924752382" duration="39424000" />
+      <workItem from="1713057074554" duration="2887000" />
+      <workItem from="1713098361682" duration="12666000" />
+    </task>
+    <task id="LOCAL-00001" summary="pg">
+      <option name="closed" value="true" />
+      <created>1712161094521</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1712161094521</updated>
+    </task>
+    <task id="LOCAL-00002" summary="pg">
+      <option name="closed" value="true" />
+      <created>1712207663843</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1712207663843</updated>
+    </task>
+    <task id="LOCAL-00003" summary="pg">
+      <option name="closed" value="true" />
+      <created>1712278249452</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1712278249452</updated>
+    </task>
+    <task id="LOCAL-00004" summary="pg">
+      <option name="closed" value="true" />
+      <created>1712278774249</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1712278774249</updated>
+    </task>
+    <task id="LOCAL-00005" summary="pg">
+      <option name="closed" value="true" />
+      <created>1712286725864</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1712286725864</updated>
+    </task>
+    <task id="LOCAL-00006" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712421355759</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1712421355759</updated>
+    </task>
+    <task id="LOCAL-00007" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712421486878</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1712421486878</updated>
+    </task>
+    <task id="LOCAL-00008" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712465648403</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1712465648403</updated>
+    </task>
+    <task id="LOCAL-00009" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712634506351</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1712634506351</updated>
+    </task>
+    <task id="LOCAL-00010" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712699136134</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1712699136134</updated>
+    </task>
+    <task id="LOCAL-00011" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712764873016</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1712764873016</updated>
+    </task>
+    <task id="LOCAL-00012" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712808810070</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1712808810070</updated>
+    </task>
+    <task id="LOCAL-00013" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712809886863</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1712809886863</updated>
+    </task>
+    <task id="LOCAL-00014" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1712894124423</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1712894124423</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="pg" />
+    <MESSAGE value="    val key:Long get() = card.key.or(parent?.key ?: 0)" />
+    <option name="LAST_COMMIT_MESSAGE" value="    val key:Long get() = card.key.or(parent?.key ?: 0)" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="JetRunConfigurationType">
+        <watch expression="this" />
+      </configuration>
+    </watches-manager>
+  </component>
+</project>
