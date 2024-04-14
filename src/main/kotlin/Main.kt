@@ -1,5 +1,8 @@
 import domain.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration
@@ -12,7 +15,7 @@ suspend fun main() = runBlocking {
     val time = TimeSource.Monotonic.markNow()
     val scope = CoroutineScope(Dispatchers.Default)
     val total = AtomicLong()
-    val work = scope.launch {
+    val processor = flow {
         Card.collection.asSequence()
             .map { Hand(index = 1, card = it) }
             .flatMap { it.children }
@@ -21,48 +24,47 @@ suspend fun main() = runBlocking {
             .flatMap { it.children }
             .flatMap { it.children }
             .flatMap { it.childrenLast }
-            .chunked( 1_000)
-            .forEach { data ->
-                launch {
-                    data.let { hands ->
-                        val count = hands
-                            .map {
-                                val start = time.elapsedNow()
-                                val draw = when {
-                                    it.royalFlushKey >= 5 -> Draw.ROYAL_FLUSH
-                                    it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
-                                    it.wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
-                                    it.quadrupleBits == 4 -> Draw.QUADRUPLE
-                                    it.fullHouseBits >= 5 -> Draw.FULL_HOUSE
-                                    it.flushBits >= 5 -> Draw.FLUSH
-                                    it.straightBits >= 5 -> Draw.STRAIGHT
-                                    it.wheelBits >= 5 -> Draw.STRAIGHT
-                                    it.triplesBits == 3 -> Draw.TRIPLE
-                                    it.twoPairBits == 4 -> Draw.TWO_PAIR
-                                    it.pairsBits == 2 -> Draw.PAIR
-                                    else -> Draw.HIGH_CARD
-                                }
-                                draw.time.addAndGet(time.elapsedNow().minus(start).toLong(DurationUnit.MILLISECONDS))
-                                it.copy(draw = draw)
-                            }
-                            .onEach { it.draw.total.incrementAndGet() }
-                            .count()
-                        total.addAndGet(count.toLong())
+            .chunked(1_000)
+            .forEach { emit(it) }
+    }
+    val consumer = scope.launch {
+        processor.collect{ data ->
+            launch {
+                data.forEach {
+                    val start = time.elapsedNow()
+                    val draw = when {
+                        it.royalFlushKey >= 5 -> Draw.ROYAL_FLUSH
+                        it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+                        it.wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+                        it.quadrupleBits == 4 -> Draw.QUADRUPLE
+                        it.fullHouseBits >= 5 -> Draw.FULL_HOUSE
+                        it.flushBits >= 5 -> Draw.FLUSH
+                        it.straightBits >= 5 -> Draw.STRAIGHT
+                        it.wheelBits >= 5 -> Draw.STRAIGHT
+                        it.triplesBits == 3 -> Draw.TRIPLE
+                        it.twoPairBits == 4 -> Draw.TWO_PAIR
+                        it.pairsBits == 2 -> Draw.PAIR
+                        else -> Draw.HIGH_CARD
                     }
+                    draw.time.addAndGet(time.elapsedNow().minus(start).toLong(DurationUnit.MILLISECONDS))
+                    total.incrementAndGet()
+                    it.copy(draw = draw)
                 }
             }
+            total.addAndGet(data.count().toLong())
+        }
     }
-    work.join()
+    consumer.join()
     Draw.collection
         .forEach {
             println(
                 """
-                Draw:     ${it.name} 
-                Count:    ${it.total.toLong().format} 
-                Sequence: ${it.sequence7.format} 
+                Draw:     ${it.name}
+                Count:    ${it.total.toLong().format}
+                Sequence: ${it.sequence7.format}
                 Diff:     ${(it.total.toLong() - it.sequence7).format}
                 Duration: ${Duration.convert(it.time.toDouble(), DurationUnit.MILLISECONDS, DurationUnit.SECONDS)}
-                
+
                 """.trimIndent()
             )
         }
