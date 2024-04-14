@@ -5,13 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="51d3f0c0-493f-4c68-b4d5-e98d8487662f" name="Changes" comment="    val key:Long get() = card.key.or(parent?.key ?: 0)">
-      <change afterPath="$PROJECT_DIR$/kc.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_10_2024_3_34_PM_[Changes]/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_10_2024_3_34_PM__Changes_.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_11_2024_5_08_PM_[Changes]/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_11_2024_5_08_PM__Changes_.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_9_2024_8_43_PM_[Changes]/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_9_2024_8_43_PM__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Main.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/domain/Draw.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/domain/Draw.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/domain/Hand.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/domain/Hand.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/domain/Rank.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/domain/Rank.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -207,7 +210,7 @@
       <workItem from="1712883179012" duration="10727000" />
       <workItem from="1712924752382" duration="39424000" />
       <workItem from="1713057074554" duration="2887000" />
-      <workItem from="1713098361682" duration="12666000" />
+      <workItem from="1713098361682" duration="19320000" />
     </task>
     <task id="LOCAL-00001" summary="pg">
       <option name="closed" value="true" />
@@ -321,7 +324,23 @@
       <option name="project" value="LOCAL" />
       <updated>1712894124423</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1713115319170</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1713115319170</updated>
+    </task>
+    <task id="LOCAL-00016" summary="    val key:Long get() = card.key.or(parent?.key ?: 0)">
+      <option name="closed" value="true" />
+      <created>1713115991348</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1713115991348</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

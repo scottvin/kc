@@ -2,9 +2,12 @@ import domain.*
 import kotlinx.coroutines.*
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 suspend fun main() = runBlocking {
     val time = TimeSource.Monotonic.markNow()
     val scope = CoroutineScope(Dispatchers.Default)
@@ -45,42 +48,60 @@ suspend fun main() = runBlocking {
 //                        .filter { it.baseKey.and(Rank._9.key).and(Suit._C.key) > 0 }
 //                        .filter { it.baseKey.and(Rank._8.key).and(Suit._D.key) > 0 }
 //                        .filter { it.baseKey.and(Rank._7.key).and(Suit._H.key) > 0 }
+
+//                        .filter { it.baseKey.and(Rank._5.key).and(Suit._C.key) > 0 }
+//                        .filter { it.baseKey.and(Rank._4.key).and(Suit._D.key) > 0 }
+//                        .filter { it.baseKey.and(Rank._3.key).and(Suit._H.key) > 0 }
+//                        .filter { it.baseKey.and(Rank._2.key).and(Suit._S.key) > 0 }
+//                        .filter { it.baseKey.and(Rank._A.key).and(Suit._C.key) > 0 }
                 }
             }
             .forEach { data ->
                 launch {
                     data.await().let { hands ->
-                        hands.map {
-                            val draw = when {
-                                it.royalFlushKey >= 5 -> Draw.ROYAL_FLUSH
-                                it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
-                                it.quadrupleBits == 4 -> Draw.QUADRUPLE
-                                it.fullHouseBits >= 5 -> Draw.FULL_HOUSE
-                                it.flushBits >= 5 -> Draw.FLUSH
-                                it.straightBits >= 5 -> Draw.STRAIGHT
-                                it.triplesBits == 3 -> Draw.TRIPLE
-                                it.twoPairBits == 4 -> Draw.TWO_PAIR
-                                it.pairsBits == 2 -> Draw.PAIR
-                                else -> Draw.HIGH_CARD
+                        val count = hands
+                            .map {
+                                val start = time.elapsedNow()
+                                val draw = when {
+                                    it.royalFlushKey >= 5 -> Draw.ROYAL_FLUSH
+                                    it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+                                    it.wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+                                    it.quadrupleBits == 4 -> Draw.QUADRUPLE
+                                    it.fullHouseBits >= 5 -> Draw.FULL_HOUSE
+                                    it.flushBits >= 5 -> Draw.FLUSH
+                                    it.straightBits >= 5 -> Draw.STRAIGHT
+                                    it.wheelBits >= 5 -> Draw.STRAIGHT
+                                    it.triplesBits == 3 -> Draw.TRIPLE
+                                    it.twoPairBits == 4 -> Draw.TWO_PAIR
+                                    it.pairsBits == 2 -> Draw.PAIR
+                                    else -> Draw.HIGH_CARD
+                                }
+                                draw.time.addAndGet(time.elapsedNow().minus(start).toLong(DurationUnit.MILLISECONDS))
+                                it.copy(draw = draw)
                             }
-                            draw.total.incrementAndGet()
-                            it.copy(draw = draw)
-                        }.forEach { _ -> }
-                        total.addAndGet(hands.count().toLong())
+//                            .filter { it.draw.key == Draw.HIGH_CARD.key }
+//                            .onEach { println(it.print) }
+                            .onEach { it.draw.total.incrementAndGet() }
+                            .count()
+                        total.addAndGet(count.toLong())
                     }
                 }
             }
     }
     work.join()
     Draw.collection
-        .forEach { println(
-            """
-                Draw: ${it.name} 
-                Count: ${it.total.toLong().format} 
+        .forEach {
+            println(
+                """
+                Draw:     ${it.name} 
+                Count:    ${it.total.toLong().format} 
                 Sequence: ${it.sequence7.format} 
-                Diff: ${(it.total.toLong() - it.sequence7).format}
+                Diff:     ${(it.total.toLong() - it.sequence7).format}
+                Duration: ${Duration.convert(it.time.toDouble(), DurationUnit.MILLISECONDS, DurationUnit.SECONDS)}
                 
-                """.trimIndent()) }
+                """.trimIndent()
+            )
+        }
 
     println("Count: ${total.toLong().format}  Elapsed: ${time.elapsedNow()}")
 }
@@ -131,6 +152,20 @@ val Hand.royalFlushKey: Long
                     return newRoyalFlushKey
                 }
                 it.royalFlushKey
+            } ?: 0L
+        }
+        return 0L
+    }
+val Hand.wheelFlushBits: Int get() = wheelFlushKey.countOneBits()
+val Hand.wheelFlushKey: Long
+    get() {
+        if (index >= 5) {
+            return parent?.let {
+                val newWheelFlushKey = baseKey.and(Rank.WHEEL_RANKS_KEY).and(card.suit.key)
+                if (it.wheelFlushBits < 5 && newWheelFlushKey.countOneBits() >= 5) {
+                    return newWheelFlushKey
+                }
+                it.wheelFlushKey
             } ?: 0L
         }
         return 0L
@@ -200,11 +235,32 @@ val Hand.straightKey: Long
     get() {
         val cardKey = card.key
         return parent?.let {
-            val newStraightKey = it.baseKey.and(card.rank.seriesKey)
-            if(it.straightBits < 5 && newStraightKey.countOneBits() >= 5) {
-                return it.baseKey.and(card.rank.seriesKey)
+            val newStraightKey = baseKey.and(card.rank.seriesKey)
+            if (it.straightBits < 5 && newStraightKey.countOneBits() >= 5) {
+                return card.rank.series[0].key.and(baseKey).takeHighestOneBit()
+                    .or(card.rank.series[1].key.and(baseKey).takeHighestOneBit())
+                    .or(card.rank.series[2].key.and(baseKey).takeHighestOneBit())
+                    .or(card.rank.series[3].key.and(baseKey).takeHighestOneBit())
+                    .or(card.rank.series[4].key.and(baseKey).takeHighestOneBit())
             }
             it.straightKey
+        } ?: cardKey
+    }
+
+val Hand.wheelBits: Int get() = wheelKey.countOneBits()
+val Hand.wheelKey: Long
+    get() {
+        val cardKey = card.key
+        return parent?.let {
+            val newWheelKey = baseKey.and(Rank.WHEEL_RANKS_KEY)
+            if (it.wheelBits < 5 && newWheelKey.countOneBits() >= 5) {
+                return Rank.WHEEL_RANKS[0].key.and(baseKey).takeHighestOneBit()
+                    .or(Rank.WHEEL_RANKS[1].key.and(baseKey).takeHighestOneBit())
+                    .or(Rank.WHEEL_RANKS[2].key.and(baseKey).takeHighestOneBit())
+                    .or(Rank.WHEEL_RANKS[3].key.and(baseKey).takeHighestOneBit())
+                    .or(Rank.WHEEL_RANKS[4].key.and(baseKey).takeHighestOneBit())
+            }
+            it.wheelKey
         } ?: cardKey
     }
 

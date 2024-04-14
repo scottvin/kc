@@ -33,10 +33,10 @@ data class Rank(val index: Int, val code: String) {
         val _2: Rank = collection[12]
 
         val seriesData = listOf(
-            listOf(_A),
-            listOf(_A, _K),
-            listOf(_A, _K, _Q),
-            listOf(_A, _K, _Q, _J),
+            listOf(_A, _A, _A, _A, _A),
+            listOf(_A, _A, _A, _A, _K),
+            listOf(_A, _A, _A, _K, _Q),
+            listOf(_A, _A, _K, _Q, _J),
             listOf(_A, _K, _Q, _J, _T),
             listOf(_K, _Q, _J, _T, _9),
             listOf(_Q, _J, _T, _9, _8),
@@ -47,8 +47,11 @@ data class Rank(val index: Int, val code: String) {
             listOf(_7, _6, _5, _4, _3),
             listOf(_6, _5, _4, _3, _2),
         )
-        val ROYAL_RANKS_KEY: Long get() = listOf(_A, _K, _Q, _J, _T).map { it.key }.reduce { acc, key ->  acc.or(key)};
-        val WHEEL_RANKS_KEY: Long get() = listOf(_5, _4, _3, _2, _A).map { it.key }.reduce { acc, key ->  acc.or(key)};
+        val ROYAL_RANKS: List<Rank> get() = listOf(_A, _K, _Q, _J, _T)
+        val ROYAL_RANKS_KEY: Long get() = ROYAL_RANKS.map { it.key }.reduce { acc, key ->  acc.or(key)};
+
+        val WHEEL_RANKS: List<Rank> get() = listOf(_5, _4, _3, _2, _A)
+        val WHEEL_RANKS_KEY: Long get() = WHEEL_RANKS.map { it.key }.reduce { acc, key ->  acc.or(key)};
     }
     val key: Long get() = topRankKey shr (index * 4)
     val series: List<Rank> get() = seriesData[index]
