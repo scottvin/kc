@@ -9,7 +9,6 @@ data class Hand(
     val parentKey: Long = 0L,
     val baseKey: Long = card.key,
     val last: Boolean = false,
-    val drawHands: List<Hand> = listOf(),
 
     val drawKey: Long = 0L,
     val pocketKey: Long = 0L,
