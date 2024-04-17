@@ -34,5 +34,4 @@ data class Draw(val key: Long = 0L, val name: String = "", var sequence5: Int = 
     }
 
     val total = AtomicLong()
-    val time = AtomicLong()
 }
