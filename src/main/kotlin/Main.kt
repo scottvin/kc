@@ -19,22 +19,17 @@ suspend fun main() = runBlocking {
             .flatMap { it.children }
             .flatMap { it.children }
             .flatMap { it.children }
-            .flatMap { it.childrenLast }
-            .map {
-                async {
-                    it.drawHands
+            .forEach { hand ->
+                launch {
+                    sequenceOf(hand)
+                        .flatMap { it.childrenLast }
+                        .map { it.drawHands }
+                        .flatMap { it.rivers }
+                        .flatMap { it.turns }
+                        .flatMap { it.flops }
+                        .flatMap { it.pockets }
+                        .forEach { _ -> }
                 }
-            }
-            .forEach { _ ->
-//            .forEach { hand ->
-//                launch {
-//                    sequenceOf(hand.await())
-//                        .flatMap { it.rivers }
-//                        .flatMap { it.turns }
-//                        .flatMap { it.flops }
-//                        .flatMap { it.pockets }
-//                        .forEach { _ -> }
-//                }
             }
     }
     work.join()
