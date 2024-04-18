@@ -11,26 +11,26 @@ suspend fun main() = runBlocking {
     val time = TimeSource.Monotonic.markNow()
     val scope = CoroutineScope(Dispatchers.Default)
     val total = AtomicLong()
-    Card.collection.asSequence()
-        .flatMap { sequenceOf(Hand(index = 1, card = it)) }
-        .flatMap { it.children }
-        .flatMap { it.children }
-        .flatMap { it.children }
-        .flatMap { it.children }
-        .flatMap { it.children }
-        .flatMap { it.childrenLast }
-        .map { it.drawHands }
-        .flatMap { it.rivers }
-        .flatMap { it.turns }
-        .flatMap { it.flops }
-        .flatMap { it.pockets }
-        .chunked(6)
-        .forEach {
-            launch {
-                it.first().print
-            }
-        }
     val work = scope.launch {
+        Card.collection.asSequence()
+            .flatMap { sequenceOf(Hand(index = 1, card = it)) }
+            .forEach { hand ->
+                launch {
+                    sequenceOf(hand)
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.children }
+                        .flatMap { it.childrenLast }
+                        .map { it.drawHands }
+                        .flatMap { it.rivers }
+                        .flatMap { it.turns }
+                        .flatMap { it.flops }
+                        .flatMap { it.pockets }
+                        .forEach { _ -> }
+                }
+            }
     }
     work.join()
     println("Count: ${total.toLong().format}  Elapsed: ${time.elapsedNow()}")
