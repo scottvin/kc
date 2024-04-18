@@ -33,5 +33,5 @@ data class Draw(val key: Long = 0L, val name: String = "", var sequence5: Int = 
         val HIGH_CARD get() = collection[9]
     }
 
-    val total = AtomicLong()
+//    val total = AtomicLong()
 }

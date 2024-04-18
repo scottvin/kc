@@ -23,61 +23,61 @@ suspend fun main() = runBlocking {
             .chunked(100)
             .forEach { data ->
                 launch {
-                    val results = data.map {
-                        val draw = when {
-                            it.royalFlushBits >= 5 -> Draw.ROYAL_FLUSH
-                            it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
-                            it.wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
-                            it.quadrupleBits == 4 -> Draw.QUADRUPLE
-                            it.fullHouseBits >= 5 -> Draw.FULL_HOUSE
-                            it.flushBits >= 5 -> Draw.FLUSH
-                            it.straightBits >= 5 -> Draw.STRAIGHT
-                            it.wheelBits >= 5 -> Draw.STRAIGHT
-                            it.triplesBits == 3 -> Draw.TRIPLE
-                            it.twoPairBits == 4 -> Draw.TWO_PAIR
-                            it.pairsBits == 2 -> Draw.PAIR
-                            else -> Draw.HIGH_CARD
-                        }
-                        draw.total.incrementAndGet()
-                        it.copy(draw = draw)
-                    }
-                    .flatMap { it.drawHands }
-                    val first = results.first()
-                    val noOfDraws = results.count()
-                    first.print
-                    println(
-                        "Duration: ${time.elapsedNow()}  Total: ${
-                            total.addAndGet(
-                                noOfDraws.toLong()
-                            ).format
-                        }"
-                    )
+//                    val results =
+                        data.map {
+                            val draw = when {
+                                it.royalFlushBits >= 5 -> Draw.ROYAL_FLUSH
+                                it.straightFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+                                it.wheelFlushBits >= 5 -> Draw.STRAIGHT_FLUSH
+                                it.quadrupleBits == 4 -> Draw.QUADRUPLE
+                                it.fullHouseBits >= 5 -> Draw.FULL_HOUSE
+                                it.flushBits >= 5 -> Draw.FLUSH
+                                it.straightBits >= 5 -> Draw.STRAIGHT
+                                it.wheelBits >= 5 -> Draw.STRAIGHT
+                                it.triplesBits == 3 -> Draw.TRIPLE
+                                it.twoPairBits == 4 -> Draw.TWO_PAIR
+                                it.pairsBits == 2 -> Draw.PAIR
+                                else -> Draw.HIGH_CARD
+                            }
+//                        draw.total.incrementAndGet()
+                            it.copy(draw = draw)
+                        }.flatMap { it.drawHands }
+//                    val first = results.first()
+//                    val noOfDraws = results.count()
+//                    first.print
+//                    println(
+//                        "Duration: ${time.elapsedNow()}  Total: ${
+//                            total.addAndGet(
+//                                noOfDraws.toLong()
+//                            ).format
+//                        }"
+//                    )
                 }
             }
     }
 
     work.join()
-    Draw.collection
-        .forEach {
-            println(
-                """
-                Draw:     ${it.name}
-                Count:    ${it.total.toLong().format}
-                Sequence: ${it.sequence7.format}
-                Diff:     ${(it.total.toLong() - it.sequence7).format}
-                """.trimIndent()
-            )
-        }
+//    Draw.collection
+//        .forEach {
+//            println(
+//                """
+//                Draw:     ${it.name}
+//                Count:    ${it.total.toLong().format}
+//                Sequence: ${it.sequence7.format}
+//                Diff:     ${(it.total.toLong() - it.sequence7).format}
+//                """.trimIndent()
+//            )
+//        }
 
     println("Count: ${total.toLong().format}  Elapsed: ${time.elapsedNow()}")
 }
 
 val Hand.drawHands: Sequence<Hand>
     get() = sequenceOf(this)
-        .flatMap { it.pockets }
-        .flatMap { it.flops }
-        .flatMap { it.turns }
         .flatMap { it.rivers }
+        .flatMap { it.turns }
+        .flatMap { it.flops }
+        .flatMap { it.pockets }
 
 val Hand.children: Sequence<Hand>
     get() = card.remaining.asSequence()
@@ -299,28 +299,28 @@ val Hand.rivers: Sequence<Hand>
         .flatMap { it.drawsInit }
         .map { it.copy(riverKey = it.drawKey) }
 
-val Hand.print: Unit
-    get() = println(
-        """|Draw:          ${draw.name} 
-           |Bass:          ${baseKey.code} 
-           |Parent:        ${parentKey.code} 
-           |Draw:          ${drawKey.code} 
-           |Pocket:        ${pocketKey.code} 
-           |Flow:          ${flopKey.code} 
-           |Turn:          ${turnKey.code} 
-           |River:         ${riverKey.code} 
-           |Pairs          ${pairsKey.code}
-           |Triples        ${triplesKey.code}
-           |Quadruple      ${quadrupleKey.code}
-           |Full House     ${fullHouseKey.code}
-           |Two Pair       ${twoPairKey.code}
-           |Flush          ${flushKey.code}
-           |Straight       ${straightKey.code}
-           |Straight Flush ${straightFlushKey.code}
-        |""".trimMargin()
-    )
+//val Hand.print: Unit
+//    get() = println(
+//        """|Draw:          ${draw.name}
+//           |Bass:          ${baseKey.code}
+//           |Parent:        ${parentKey.code}
+//           |Draw:          ${drawKey.code}
+//           |Pocket:        ${pocketKey.code}
+//           |Flow:          ${flopKey.code}
+//           |Turn:          ${turnKey.code}
+//           |River:         ${riverKey.code}
+//           |Pairs          ${pairsKey.code}
+//           |Triples        ${triplesKey.code}
+//           |Quadruple      ${quadrupleKey.code}
+//           |Full House     ${fullHouseKey.code}
+//           |Two Pair       ${twoPairKey.code}
+//           |Flush          ${flushKey.code}
+//           |Straight       ${straightKey.code}
+//           |Straight Flush ${straightFlushKey.code}
+//        |""".trimMargin()
+//    )
 
-val Long.cards: List<Card> get() = Card.collection.filter { (it.key and this) == it.key }
-val Long.code: String get() = cards.joinToString(" ") { c -> c.code }
+//val Long.cards: List<Card> get() = Card.collection.filter { (it.key and this) == it.key }
+//val Long.code: String get() = cards.joinToString(" ") { c -> c.code }
 val formatLong = DecimalFormat("#,##0")
 val Long.format: String get() = formatLong.format(this)
