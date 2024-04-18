@@ -14,14 +14,14 @@ suspend fun main() = runBlocking {
     val work = scope.launch {
         Card.collection.asSequence()
             .flatMap { sequenceOf(Hand(index = 1, card = it)) }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.children }
+            .flatMap { it.children }
             .forEach { hand ->
                 launch {
                     sequenceOf(hand)
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
-                        .flatMap { it.children }
                         .flatMap { it.childrenLast }
                         .map { it.drawHands }
                         .flatMap { it.rivers }
