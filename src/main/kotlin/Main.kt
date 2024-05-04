@@ -13,44 +13,51 @@ suspend fun main() = runBlocking {
     val total = AtomicLong()
     val work = scope.launch {
         Card.collection
-            .map { card ->
+            .map {
                 async {
-                    Hand(index = 1, card = card).children
+                    Hand(index = 1, card = it)
                 }
             }
+            .map { it.await() }
+            .map {
+                async {
+                    it.children
+                }
+            }
+            .map { it.await() }
             .map { data ->
                 async {
-                    data.await()
-                        .flatMap { it.children }
+                    data.flatMap { it.children }
                 }
             }
+            .map { it.await() }
             .map { data ->
                 async {
-                    data.await()
-                        .flatMap { it.children }
+                    data.flatMap { it.children }
                 }
             }
+            .map { it.await() }
             .map { data ->
                 async {
-                    data.await()
-                        .flatMap { it.children }
+                    data.flatMap { it.children }
                 }
             }
+            .map { it.await() }
             .map { data ->
                 async {
-                    data.await()
-                        .flatMap { it.children }
+                    data.flatMap { it.children }
                 }
             }
+            .map { it.await() }
             .map { data ->
                 async {
-                    data.await()
-                        .flatMap { it.childrenLast }
+                    data.flatMap { it.childrenLast }
                 }
             }
+            .map { it.await() }
             .forEach {
                 launch {
-                    total.addAndGet(it.await().count().toLong())
+                    total.addAndGet(it.count().toLong())
                 }
             }
 //            .forEach { hand ->
