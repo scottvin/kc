@@ -12,28 +12,63 @@ suspend fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.Default)
     val total = AtomicLong()
     val work = scope.launch {
-        Card.collection.asSequence()
-            .flatMap { sequenceOf(Hand(index = 1, card = it)) }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .flatMap { it.children }
-            .forEach { hand ->
-                launch {
-                    sequenceOf(hand)
-                        .flatMap { it.childrenLast }
-                        .map { it.drawHands }
-                        .flatMap { it.rivers }
-                        .flatMap { it.turns }
-                        .flatMap { it.flops }
-                        .flatMap { it.pockets }
-                        .forEach { _ -> }
+        Card.collection
+            .map { card ->
+                async {
+                    Hand(index = 1, card = card).children
                 }
             }
+            .map { data ->
+                async {
+                    data.await()
+                        .flatMap { it.children }
+                }
+            }
+            .map { data ->
+                async {
+                    data.await()
+                        .flatMap { it.children }
+                }
+            }
+            .map { data ->
+                async {
+                    data.await()
+                        .flatMap { it.children }
+                }
+            }
+            .map { data ->
+                async {
+                    data.await()
+                        .flatMap { it.children }
+                }
+            }
+            .map { data ->
+                async {
+                    data.await()
+                        .flatMap { it.childrenLast }
+                }
+            }
+            .forEach {
+                launch {
+                    total.addAndGet(it.await().count().toLong())
+                }
+            }
+//            .forEach { hand ->
+//                launch {
+//                    sequenceOf(hand)
+//                        .flatMap { it.childrenLast }
+//                        .map { it.drawHands }
+//                        .flatMap { it.rivers }
+//                        .flatMap { it.turns }
+//                        .flatMap { it.flops }
+//                        .flatMap { it.pockets }
+//                        .forEach { _ -> }
+//                }
+//            }
     }
     work.join()
-    println("Count: ${total.toLong().format}  Elapsed: ${time.elapsedNow()}")
+    val elapsedNow = time.elapsedNow()
+    println("Count: ${total.toLong().format}  Elapsed: $elapsedNow")
 }
 
 val Hand.drawHands: Hand
