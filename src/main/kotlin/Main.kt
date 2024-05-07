@@ -13,48 +13,13 @@ suspend fun main() = runBlocking {
     val total = AtomicLong()
     val work = scope.launch {
         Card.collection
-            .map {
-                async {
-                    Hand(index = 1, card = it)
-                }
-            }
-            .map { it.await() }
-            .map {
-                async {
-                    it.children
-                }
-            }
-            .map { it.await() }
-            .map { data ->
-                async {
-                    data.flatMap { it.children }
-                }
-            }
-            .map { it.await() }
-            .map { data ->
-                async {
-                    data.flatMap { it.children }
-                }
-            }
-            .map { it.await() }
-            .map { data ->
-                async {
-                    data.flatMap { it.children }
-                }
-            }
-            .map { it.await() }
-            .map { data ->
-                async {
-                    data.flatMap { it.children }
-                }
-            }
-            .map { it.await() }
-            .map { data ->
-                async {
-                    data.flatMap { it.childrenLast }
-                }
-            }
-            .map { it.await() }
+            .generateHandList()
+            .generateListHandSequenceList()
+            .generateHandSequenceList()
+            .generateHandSequenceList()
+            .generateHandSequenceList()
+            .generateHandSequenceList()
+            .generateHandSequenceList()
             .forEach {
                 launch {
                     total.addAndGet(it.count().toLong())
@@ -76,6 +41,24 @@ suspend fun main() = runBlocking {
     work.join()
     val elapsedNow = time.elapsedNow()
     println("Count: ${total.toLong().format}  Elapsed: $elapsedNow")
+}
+
+suspend fun List<Card>.generateHandList(): List<Hand> = coroutineScope {
+    map { card ->
+        async { Hand(index = 1, card = card) }
+    }.awaitAll()
+}
+
+suspend fun List<Hand>.generateListHandSequenceList(): List<Sequence<Hand>> = coroutineScope {
+    map {
+        async { it.children }
+    }.awaitAll()
+}
+
+suspend fun List<Sequence<Hand>>.generateHandSequenceList(): List<Sequence<Hand>> = coroutineScope {
+    map { data ->
+        async { data.flatMap {it.children } }
+    }.awaitAll()
 }
 
 val Hand.drawHands: Hand
